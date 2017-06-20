@@ -36,18 +36,39 @@ public class Main {
             "[a-zA-Z0-9][a-zA-Z0-9\\-]{0,64}(\\.[a-zA-Z0-9][a-zA-Z0-9\\-]{0,25})+";
 
     private static final String SIMPLE_PATTERN = "@{1}";
-    private static String DECODEDPATH = "InEmails.txt";
-    private static ExecutorService service = Executors.newFixedThreadPool(Integer.parseInt(System.getenv("NUMBER_OF_PROCESSORS")));
+
+    private static String PROCESS_FILE = "InEmails.txt";
+
+    private static String UNSUBSCRIBED_FILE = "UnSubEmails.txt";
+
+    private static int NUMBER_OF_PROCESSORS = Integer.parseInt(System.getenv("NUMBER_OF_PROCESSORS"));
+
+    private static ExecutorService service;
+
+
+    //Список хороших адресов, после обработки
     private static List<String> finalGoodEmails = new ArrayList<>();
+
+    //Список адресов, с которыми происходит магия
     private Map<String, Domain> inEmails = new HashMap<>();
+
+    //Список неадекватных адресов
     private Set<String> blackEmailsSet = new HashSet<>();
-    private List<Future> futureList = new ArrayList<>();
+
+    //Список задач на обработку доменов
+    private List<Future> futureList;
+
+    //Список отписанных адресов
+    private List<String> unsubscriberEmails = new ArrayList<>();
 
     public static void main(String[] args) {
 
+
         String path = Main.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+        service = Executors.newFixedThreadPool(NUMBER_OF_PROCESSORS * 4);
+
         try {
-            DECODEDPATH = URLDecoder.decode(path, "UTF-8");
+            PROCESS_FILE = URLDecoder.decode(path, "UTF-8");
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
@@ -76,7 +97,7 @@ public class Main {
         this.blackEmailsSet.add(s);
     }
 
-    private void addInMap(String email) {
+    private void addInMap(String email) throws ArrayIndexOutOfBoundsException {
 
 
         String[] temp = email.split("@");
@@ -92,10 +113,10 @@ public class Main {
 
     }
 
-    private File createNewFile() {
+    private File createNewFile(String path) {
 
-        Date d = new Date();
-        File goodFile = new File("GoodEmails_" + d.getTime() + ".txt");
+
+        File goodFile = new File(path);
 
         try {
             boolean created = goodFile.createNewFile();
@@ -106,7 +127,7 @@ public class Main {
         return goodFile;
     }
 
-    private boolean doesContainAt(String line) {
+    private boolean doesMatchPattern(String line) {
 
         return line.contains("@");
     }
@@ -116,44 +137,56 @@ public class Main {
         //Получаем доступ к файлу
 
 
-        File file = new File("inEmails.txt");
+        Set<String> processSet = loadEmailsToProcess(new File(PROCESS_FILE));
 
-        Set<String> tempSet = new HashSet<>();
+        Set<String> unsubccribedList = loadEmailsToProcess(new File(UNSUBSCRIBED_FILE));
 
-        try (FileReader fis = new FileReader(file);
-             BufferedReader br = new BufferedReader(fis)) {
+        processSet.removeAll(unsubccribedList);
 
+        //Простая проверка паттерна адреса
+        filterListFirstStage(processSet);
 
-            String line = "";
-
-            while ((line = br.readLine()) != null) {
-
-                tempSet.add(line.trim());
-
-            }
-
-        } catch (FileNotFoundException e1) {
-            e1.printStackTrace();
-        } catch (IOException e1) {
-            e1.printStackTrace();
-        }
-//TODO Удалить из сета уже известные плохие адреса
-
-        for (String s : tempSet) {
-
-            if (doesContainAt(s)) {
-
-                addInMap(s);
-
-            } else {
-
-                addBlackEmail(s);
-
-            }
-
-        }
+        //Проверка домена на существование MX
+        futureList = filterListSecondStage();
 
         // Проверить домены на валидность
+
+
+        //Ждем завершения третей стадии проверки
+
+        while (futureList.size() > 0) {
+            System.out.println("Size is " + futureList.size());
+            if (futureList.get(0).isDone()) {
+                futureList.remove(0);
+            }
+
+        }
+
+        //У нас сформированы оба списка с адресами
+
+        System.out.println("End of PROGRAM?");
+
+        // Сохраняем хороший список
+        Date d = new Date();
+        File goodFile = createNewFile("GoodEmails_" + d.getTime() + ".txt");
+        File badFile = createNewFile("BadEmails_" + d.getTime() + ".txt");
+
+        ArrayList<String> list = new ArrayList<>();
+        list.addAll(blackEmailsSet);
+
+        saveAllGoodToFile(goodFile, finalGoodEmails);
+        saveAllGoodToFile(badFile, list);
+
+
+        System.out.println("is it now end?");
+        System.exit(0);
+
+
+    }
+
+    private List<Future> filterListSecondStage() {
+List<Future> futureList = new ArrayList<>();
+
         for (String domain : inEmails.keySet()) {
             try {
                 Attribute attributes = doLookup(domain);
@@ -170,7 +203,7 @@ public class Main {
                 } else {
 
                     for (String email : inEmails.get(domain).getEmails()) {
-                        blackEmailsSet.add(email);
+                        addBlackEmail(email);
                     }
 
 
@@ -180,39 +213,61 @@ public class Main {
 
             }
         }
+        return futureList;
+    }
 
-        //Ждем завершения всех заданий
+    private void filterListFirstStage(Set<String> processSet) {
 
-        while (futureList.size() > 0) {
-            if (futureList.get(0).isDone()) {
-                futureList.remove(0);
+        for (String s : processSet) {
+            if (doesMatchPattern(s)) {
+                try {
+                    addInMap(s);
+                } catch (ArrayIndexOutOfBoundsException e) {
+                    System.out.println("Exception " + s);
+                }
+            } else {
+                addBlackEmail(s);
             }
         }
+    }
+
+    private Set<String> loadEmailsToProcess(File file) {
+
+        Set<String> temp = new HashSet<>();
+
+        try (FileReader fis = new FileReader(file);
+             BufferedReader br = new BufferedReader(fis)) {
 
 
-        //У нас сформированы оба списка с адресами
+            String line = "";
 
-        System.out.println("End of PROGRAM?");
+            while ((line = br.readLine()) != null) {
 
-        // Сохраняем хороший список
+                temp.add(line.trim());
 
-        File fileName = createNewFile();
+            }
 
-        saveAllToFile(fileName);
+        } catch (FileNotFoundException e1) {
+            e1.printStackTrace();
+        } catch (IOException e1) {
+            e1.printStackTrace();
+        }
 
-        System.out.println("is it now end?");
+        return temp;
+    }
 
-
+    private void loadUnsubscruberList() {
 
     }
 
-    private void saveAllToFile(File fileName) {
+
+    private void saveAllGoodToFile(File fileName, List<String> list) {
 
         try (FileWriter out = new FileWriter(fileName)
              ; BufferedWriter bw = new BufferedWriter(out)) {
 
-            for (String finalGoodEmail : finalGoodEmails) {
-                bw.write(finalGoodEmail);
+            for (String email : list) {
+                bw.write(email);
                 bw.newLine();
             }
             bw.flush();

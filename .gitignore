@@ -70,4 +70,6 @@ crashlytics-build.properties
 
 ## Project-specific
 target/
-/src/testlib/
+BadEmails_*.txt
+GoodEmails_*.txt
+
