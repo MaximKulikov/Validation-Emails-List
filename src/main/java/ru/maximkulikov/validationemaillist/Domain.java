@@ -1,4 +1,4 @@
-package ru.maximkulikov.emailsvalidator;
+package ru.maximkulikov.validationemaillist;
 
 import java.util.ArrayList;
 import java.util.List;
