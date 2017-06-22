@@ -1,20 +1,7 @@
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+package ru.maximkulikov.emailsvalidator;
+
+import java.io.*;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -30,16 +17,9 @@ import javax.naming.directory.InitialDirContext;
  * @author Maxim Kulikov
  * @since 17.06.2017
  */
-public class Main {
+public class Validator {
 
-    private static final String EMAIL_PATTERN = "[a-zA-Z0-9\\+\\.\\_\\%\\-\\+]{1,256}\\@" +
-            "[a-zA-Z0-9][a-zA-Z0-9\\-]{0,64}(\\.[a-zA-Z0-9][a-zA-Z0-9\\-]{0,25})+";
-
-    private static final String SIMPLE_PATTERN = "@{1}";
-
-    private static String PROCESS_FILE = "InEmails.txt";
-
-    private static String UNSUBSCRIBED_FILE = "UnSubEmails.txt";
+    public static final Properties property = new Properties();
 
     private static int NUMBER_OF_PROCESSORS = Integer.parseInt(System.getenv("NUMBER_OF_PROCESSORS"));
 
@@ -53,7 +33,7 @@ public class Main {
     private Map<String, Domain> inEmails = new HashMap<>();
 
     //Список неадекватных адресов
-    private Set<String> blackEmailsSet = new HashSet<>();
+    private static Set<String> blackEmailsSet = new HashSet<>();
 
     //Список задач на обработку доменов
     private List<Future> futureList;
@@ -63,18 +43,26 @@ public class Main {
 
     public static void main(String[] args) {
 
+        System.setProperty("java.net.preferIPv4Stack", "true");
+        service = Executors.newFixedThreadPool(NUMBER_OF_PROCESSORS);
 
-        String path = Main.class.getProtectionDomain().getCodeSource().getLocation().getPath();
-        service = Executors.newFixedThreadPool(NUMBER_OF_PROCESSORS * 4);
+        loadCongig();
+
+        new Validator().execute();
+
+    }
+
+    private static void loadCongig() {
+        FileInputStream fis;
+
 
         try {
-            PROCESS_FILE = URLDecoder.decode(path, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
+            fis = new FileInputStream("config.properties");
+            property.load(fis);
 
-        Main mail = new Main();
-        mail.execute();
+        } catch (IOException e) {
+            System.err.println("ОШИБКА: Файл свойств отсуствует!");
+        }
     }
 
     static Attribute doLookup(String hostName) throws NamingException {
@@ -89,13 +77,11 @@ public class Main {
         return (attr);
     }
 
-    public static synchronized void addFinalGoodEmailToFinalGoodLIstPlease(String email) {
+    public static synchronized void addFinalGoodEmailToFinalGoodListPlease(String email) {
+
         finalGoodEmails.add(email);
     }
 
-    public void addBlackEmail(String s) {
-        this.blackEmailsSet.add(s);
-    }
 
     private void addInMap(String email) throws ArrayIndexOutOfBoundsException {
 
@@ -114,7 +100,6 @@ public class Main {
     }
 
     private File createNewFile(String path) {
-
 
         File goodFile = new File(path);
 
@@ -137,11 +122,11 @@ public class Main {
         //Получаем доступ к файлу
 
 
-        Set<String> processSet = loadEmailsToProcess(new File(PROCESS_FILE));
+        Set<String> processSet = loadEmailsToProcess(new File(property.getProperty("subList")));
 
-        Set<String> unsubccribedList = loadEmailsToProcess(new File(UNSUBSCRIBED_FILE));
+        Set<String> unsubscribedList = loadEmailsToProcess(new File(property.getProperty("unsubList")));
 
-        processSet.removeAll(unsubccribedList);
+        processSet.removeAll(unsubscribedList);
 
         //Простая проверка паттерна адреса
         filterListFirstStage(processSet);
@@ -149,20 +134,14 @@ public class Main {
         //Проверка домена на существование MX
         futureList = filterListSecondStage();
 
-        // Проверить домены на валидность
-
-
-        //Ждем завершения третей стадии проверки
 
         while (futureList.size() > 0) {
-            System.out.println("Size is " + futureList.size());
+            //     System.out.println("Size is " + futureList.size());
             if (futureList.get(0).isDone()) {
                 futureList.remove(0);
             }
 
         }
-
-        //У нас сформированы оба списка с адресами
 
         System.out.println("End of PROGRAM?");
 
@@ -177,15 +156,13 @@ public class Main {
         saveAllGoodToFile(goodFile, finalGoodEmails);
         saveAllGoodToFile(badFile, list);
 
-
         System.out.println("is it now end?");
         System.exit(0);
-
 
     }
 
     private List<Future> filterListSecondStage() {
-List<Future> futureList = new ArrayList<>();
+        List<Future> futureList = new ArrayList<>();
 
         for (String domain : inEmails.keySet()) {
             try {
@@ -194,19 +171,15 @@ List<Future> futureList = new ArrayList<>();
                 if (attributes != null) {
                     inEmails.get(domain).setAttr(attributes);
 
-                    // Отправляем на проверку адреса текущего домена
                     Future f = service.submit(new TalkWithSMTP(inEmails.get(domain)));
 
                     futureList.add(f);
 
-
                 } else {
 
                     for (String email : inEmails.get(domain).getEmails()) {
-                        addBlackEmail(email);
+                        addFinalBadEmailtoFinalBadListPlease(email + ";" + "440 Почтового сервера не существует");
                     }
-
-
                 }
 
             } catch (NamingException e) {
@@ -226,7 +199,7 @@ List<Future> futureList = new ArrayList<>();
                     System.out.println("Exception " + s);
                 }
             } else {
-                addBlackEmail(s);
+                addFinalBadEmailtoFinalBadListPlease(s + ";" + "440 Не является адресом электронной почты");
             }
         }
     }
@@ -238,7 +211,6 @@ List<Future> futureList = new ArrayList<>();
         try (FileReader fis = new FileReader(file);
              BufferedReader br = new BufferedReader(fis)) {
 
-
             String line = "";
 
             while ((line = br.readLine()) != null) {
@@ -249,8 +221,10 @@ List<Future> futureList = new ArrayList<>();
 
         } catch (FileNotFoundException e1) {
             e1.printStackTrace();
+            System.exit(1);
         } catch (IOException e1) {
             e1.printStackTrace();
+
         }
 
         return temp;
@@ -279,5 +253,9 @@ List<Future> futureList = new ArrayList<>();
             e.printStackTrace();
         }
 
+    }
+
+    public static synchronized void addFinalBadEmailtoFinalBadListPlease(String email) {
+        blackEmailsSet.add(email);
     }
 }
