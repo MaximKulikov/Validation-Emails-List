@@ -10,6 +10,11 @@ import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.DirContext;
 import javax.naming.directory.InitialDirContext;
+import javafx.application.Application;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
 
 /**
  * Validation-List-of-Emails
@@ -17,7 +22,7 @@ import javax.naming.directory.InitialDirContext;
  * @author Maxim Kulikov
  * @since 17.06.2017
  */
-public class Validator {
+public class Validator extends Application {
 
     public static final Properties property = new Properties();
 
@@ -28,13 +33,10 @@ public class Validator {
 
     //Список хороших адресов, после обработки
     private static List<String> finalGoodEmails = new ArrayList<>();
-
-    //Список адресов, с которыми происходит магия
-    private Map<String, Domain> inEmails = new HashMap<>();
-
     //Список неадекватных адресов
     private static Set<String> blackEmailsSet = new HashSet<>();
-
+    //Список адресов, с которыми происходит магия
+    private Map<String, Domain> inEmails = new HashMap<>();
     //Список задач на обработку доменов
     private List<Future> futureList;
 
@@ -44,15 +46,31 @@ public class Validator {
     public static void main(String[] args) {
 
         System.setProperty("java.net.preferIPv4Stack", "true");
+
         service = Executors.newFixedThreadPool(NUMBER_OF_PROCESSORS);
 
-        loadCongig();
+ /*
+
+        loadConfig();
+
+        if (System.getProperty("java.runtime.name").startsWith("Java(TM)") &&
+                Double.parseDouble(System.getProperty("java.specification.version")) >= 1.8d) {
+            launch();
+        } else {
+
+
+            new Validator().execute();
+        }
+
+        */
+
+
 
         new Validator().execute();
 
     }
 
-    private static void loadCongig() {
+    private static void loadConfig() {
         FileInputStream fis;
 
 
@@ -82,6 +100,28 @@ public class Validator {
         finalGoodEmails.add(email);
     }
 
+    public static synchronized void addFinalBadEmailtoFinalBadListPlease(String email) {
+        blackEmailsSet.add(email);
+    }
+
+    public static void saveProperty(String mailFrom, String trim) {
+
+        Validator.property.setProperty(mailFrom, trim);
+
+        FileOutputStream fos;
+
+
+        try {
+
+            fos = new FileOutputStream("config.properties");
+            Validator.property.store(fos, "Commentary");
+
+        } catch (IOException e) {
+            System.err.println("ОШИБКА: Файл свойств отсуствует!");
+        }
+
+
+    }
 
     private void addInMap(String email) throws ArrayIndexOutOfBoundsException {
 
@@ -117,14 +157,16 @@ public class Validator {
         return line.contains("@");
     }
 
-    private void execute() {
+    public void execute() {
 
+        System.out.println("Going");
         //Получаем доступ к файлу
 
 
         Set<String> processSet = loadEmailsToProcess(new File(property.getProperty("subList")));
 
         Set<String> unsubscribedList = loadEmailsToProcess(new File(property.getProperty("unsubList")));
+
 
         processSet.removeAll(unsubscribedList);
 
@@ -161,6 +203,21 @@ public class Validator {
 
     }
 
+    private void filterListFirstStage(Set<String> processSet) {
+
+        for (String s : processSet) {
+            if (doesMatchPattern(s)) {
+                try {
+                    addInMap(s);
+                } catch (ArrayIndexOutOfBoundsException e) {
+                    System.out.println("Exception " + s);
+                }
+            } else {
+                addFinalBadEmailtoFinalBadListPlease(s + ";" + "440 Не является адресом электронной почты");
+            }
+        }
+    }
+
     private List<Future> filterListSecondStage() {
         List<Future> futureList = new ArrayList<>();
 
@@ -187,21 +244,6 @@ public class Validator {
             }
         }
         return futureList;
-    }
-
-    private void filterListFirstStage(Set<String> processSet) {
-
-        for (String s : processSet) {
-            if (doesMatchPattern(s)) {
-                try {
-                    addInMap(s);
-                } catch (ArrayIndexOutOfBoundsException e) {
-                    System.out.println("Exception " + s);
-                }
-            } else {
-                addFinalBadEmailtoFinalBadListPlease(s + ";" + "440 Не является адресом электронной почты");
-            }
-        }
     }
 
     private Set<String> loadEmailsToProcess(File file) {
@@ -234,7 +276,6 @@ public class Validator {
 
     }
 
-
     private void saveAllGoodToFile(File fileName, List<String> list) {
 
         try (FileWriter out = new FileWriter(fileName)
@@ -255,7 +296,16 @@ public class Validator {
 
     }
 
-    public static synchronized void addFinalBadEmailtoFinalBadListPlease(String email) {
-        blackEmailsSet.add(email);
+    @Override
+    public void start(Stage primaryStage) throws Exception {
+        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/resources/fxml/uno.fxml"));
+        Parent root = fxmlLoader.load();
+        Scene scene = new Scene(root);
+        Stage stage = new Stage();
+        stage.setTitle("Validation-Emails-List");
+        stage.setResizable(true);
+        stage.setScene(scene);
+        stage.show();
+
     }
 }

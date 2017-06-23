@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+
+<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.maximkulikov.validationemaillist.controllers.Uno">
+   <children>
+      <GridPane layoutX="46.0" layoutY="49.0" prefHeight="303.0" prefWidth="382.0">
+        <columnConstraints>
+          <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+          <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+        </columnConstraints>
+        <rowConstraints>
+          <RowConstraints maxHeight="102.0" minHeight="10.0" prefHeight="102.0" vgrow="SOMETIMES" />
+          <RowConstraints maxHeight="173.0" minHeight="10.0" prefHeight="114.0" vgrow="SOMETIMES" />
+          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+        </rowConstraints>
+         <children>
+            <Label text="Email" />
+            <Label text="Domain Name" GridPane.rowIndex="1" />
+            <Label text="File to Process" GridPane.rowIndex="2" />
+            <Label text="Black List" GridPane.rowIndex="3" />
+            <TextField fx:id="taMailFrom" GridPane.columnIndex="1" />
+            <TextField fx:id="taMailServer" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+            <HBox prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
+               <children>
+                  <TextField fx:id="taSubsList" />
+                  <Button mnemonicParsing="false" onAction="#butChooseSubs" prefHeight="25.0" prefWidth="100.0" text="Choose" />
+               </children>
+            </HBox>
+            <HBox prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="3">
+               <children>
+                  <TextField fx:id="taUnSubsList" />
+                  <Button mnemonicParsing="false" onAction="#butChooseUnSubs" prefHeight="25.0" prefWidth="100.0" text="Choose" />
+               </children>
+            </HBox>
+         </children>
+      </GridPane>
+      <Button fx:id="butProcessData" disable="true" layoutX="224.0" layoutY="352.0" mnemonicParsing="false" onAction="#butActionProcessData" text="Button" />
+   </children>
+</AnchorPane>
