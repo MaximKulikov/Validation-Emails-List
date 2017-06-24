@@ -10,8 +10,10 @@ import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TextField;
 import javafx.stage.FileChooser;
+import ru.maximkulikov.validationemaillist.C;
 import ru.maximkulikov.validationemaillist.Validator;
 
 public class Uno {
@@ -35,6 +37,19 @@ public class Uno {
     private Button butProcessData;
 
     @FXML
+    private ProgressBar progress;
+
+    @FXML
+    void butActionProcessData(ActionEvent event) {
+        butProcessData.setDisable(true);
+        butProcessData.setText("Progress...");
+        progress.setVisible(true);
+        new Thread(()-> new Validator().execute()).start();
+
+
+    }
+
+    @FXML
     void butChooseSubs(ActionEvent event) {
 
 
@@ -44,7 +59,7 @@ public class Uno {
         if (file != null) {
             taSubsList.setText(file.getName());
 
-            Validator.saveProperty("subLIst", file.getAbsolutePath());
+            Validator.saveProperty(C.SUB_LIST, file.getAbsolutePath());
             changeReady(2, true);
         }
     }
@@ -55,14 +70,9 @@ public class Uno {
         if (file != null) {
             taUnSubsList.setText(file.getName());
 
-            Validator.saveProperty("unsubList", file.getAbsolutePath());
+            Validator.saveProperty(C.UNSUB_LIST, file.getAbsolutePath());
             changeReady(3, true);
         }
-    }
-
-    @FXML
-    void butActionProcessData(ActionEvent event) {
-        new Validator().execute();
     }
 
     private void changeReady(int i, boolean b) {
@@ -80,7 +90,7 @@ public class Uno {
 
     private File chooseFile() {
 
-        fileChooser.setTitle("View Pictures");
+        fileChooser.setTitle("Файл с базой");
         fileChooser.setInitialDirectory(
                 new File(System.getProperty("user.home"))
         );
@@ -96,14 +106,18 @@ public class Uno {
     @FXML
     void initialize() {
 
-        String mailFrom = Validator.property.getProperty("mailFrom");
+        Validator.gui = this;
+
+        butProcessData.setDisable(false);
+
+        String mailFrom = Validator.property.getProperty(C.MAIL_FROM);
         if (mailFrom != null) {
             taMailFrom.setText(mailFrom);
             changeReady(0, true);
 
         }
 
-        String mxDomain = Validator.property.getProperty("mxDomain");
+        String mxDomain = Validator.property.getProperty(C.MX_DOMAIN);
         if (mxDomain != null) {
             taMailServer.setText(mxDomain);
             changeReady(1, true);
@@ -121,7 +135,7 @@ public class Uno {
                     String mailFrom = taMailFrom.getText();
 
                     if (mailFrom != null && mailFrom != "") {
-                        Validator.saveProperty("mailFrom", mailFrom.trim());
+                        Validator.saveProperty(C.MAIL_FROM, mailFrom.trim());
                         changeReady(0, true);
                     }
                 }
@@ -140,7 +154,7 @@ public class Uno {
 
                     String mxDomain = taMailServer.getText();
                     if (mxDomain != null && mxDomain != "") {
-                        Validator.saveProperty("mxDomain", mxDomain.trim());
+                        Validator.saveProperty(C.MX_DOMAIN, mxDomain.trim());
                         changeReady(1, true);
 
                     }
@@ -158,5 +172,9 @@ public class Uno {
         } catch (IOException ex) {
             ex.printStackTrace();
         }
+    }
+
+    public void setProgress(double v) {
+        progress.setProgress(v);
     }
 }

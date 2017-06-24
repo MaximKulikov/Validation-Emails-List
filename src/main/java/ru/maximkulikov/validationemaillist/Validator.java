@@ -1,6 +1,7 @@
 package ru.maximkulikov.validationemaillist;
 
 import java.io.*;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -10,11 +11,8 @@ import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.DirContext;
 import javax.naming.directory.InitialDirContext;
-import javafx.application.Application;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.stage.Stage;
+import javafx.application.Platform;
+import ru.maximkulikov.validationemaillist.controllers.Uno;
 
 /**
  * Validation-List-of-Emails
@@ -22,55 +20,33 @@ import javafx.stage.Stage;
  * @author Maxim Kulikov
  * @since 17.06.2017
  */
-public class Validator extends Application {
+public class Validator {
 
     public static final Properties property = new Properties();
 
-    private static int NUMBER_OF_PROCESSORS = Integer.parseInt(System.getenv("NUMBER_OF_PROCESSORS"));
-
+    public static Uno gui;
     private static ExecutorService service;
-
-
     //Список хороших адресов, после обработки
     private static List<String> finalGoodEmails = new ArrayList<>();
     //Список неадекватных адресов
     private static Set<String> blackEmailsSet = new HashSet<>();
+    private final int NUMBER_OF_PROCESSORS;
     //Список адресов, с которыми происходит магия
     private Map<String, Domain> inEmails = new HashMap<>();
+
     //Список задач на обработку доменов
     private List<Future> futureList;
 
     //Список отписанных адресов
     private List<String> unsubscriberEmails = new ArrayList<>();
 
-    public static void main(String[] args) {
-
+    public Validator() {
         System.setProperty("java.net.preferIPv4Stack", "true");
-
-        service = Executors.newFixedThreadPool(NUMBER_OF_PROCESSORS);
-
- /*
-
-        loadConfig();
-
-        if (System.getProperty("java.runtime.name").startsWith("Java(TM)") &&
-                Double.parseDouble(System.getProperty("java.specification.version")) >= 1.8d) {
-            launch();
-        } else {
-
-
-            new Validator().execute();
-        }
-
-        */
-
-
-
-        new Validator().execute();
-
+        NUMBER_OF_PROCESSORS = Integer.parseInt(System.getenv("NUMBER_OF_PROCESSORS"));
+        futureList = new ArrayList<>();
     }
 
-    private static void loadConfig() {
+    public static void loadConfig() {
         FileInputStream fis;
 
 
@@ -123,6 +99,7 @@ public class Validator extends Application {
 
     }
 
+
     private void addInMap(String email) throws ArrayIndexOutOfBoundsException {
 
 
@@ -136,6 +113,20 @@ public class Validator extends Application {
         }
 
         inEmails.get(domain).addEmails(email);
+
+    }
+
+    private void addToFutureList(Future f) {
+        futureList.add(f);
+        if (gui != null) {
+            Platform.runLater(() -> {
+
+                double up = futureList.size();
+                double down = inEmails.size();
+
+                gui.setProgress(up / down);
+            });
+        }
 
     }
 
@@ -159,13 +150,14 @@ public class Validator extends Application {
 
     public void execute() {
 
-        System.out.println("Going");
+        service = Executors.newFixedThreadPool(NUMBER_OF_PROCESSORS);
+
         //Получаем доступ к файлу
 
 
-        Set<String> processSet = loadEmailsToProcess(new File(property.getProperty("subList")));
+        Set<String> processSet = loadEmailsToProcess(new File(property.getProperty(C.SUB_LIST)));
 
-        Set<String> unsubscribedList = loadEmailsToProcess(new File(property.getProperty("unsubList")));
+        Set<String> unsubscribedList = loadEmailsToProcess(new File(property.getProperty(C.UNSUB_LIST)));
 
 
         processSet.removeAll(unsubscribedList);
@@ -174,7 +166,7 @@ public class Validator extends Application {
         filterListFirstStage(processSet);
 
         //Проверка домена на существование MX
-        futureList = filterListSecondStage();
+        filterListSecondStage();
 
 
         while (futureList.size() > 0) {
@@ -189,8 +181,10 @@ public class Validator extends Application {
 
         // Сохраняем хороший список
         Date d = new Date();
-        File goodFile = createNewFile("GoodEmails_" + d.getTime() + ".txt");
-        File badFile = createNewFile("BadEmails_" + d.getTime() + ".txt");
+        SimpleDateFormat sdf = new SimpleDateFormat("D_d.M.Y", Locale.ENGLISH);
+        String date = sdf.format(d);
+        File goodFile = createNewFile("GoodEmails_" + date + ".txt");
+        File badFile = createNewFile("BadEmails_" + date + ".txt");
 
         ArrayList<String> list = new ArrayList<>();
         list.addAll(blackEmailsSet);
@@ -213,13 +207,14 @@ public class Validator extends Application {
                     System.out.println("Exception " + s);
                 }
             } else {
-                addFinalBadEmailtoFinalBadListPlease(s + ";" + "440 Не является адресом электронной почты");
+                addFinalBadEmailtoFinalBadListPlease(s + ";" + "500;Не является адресом электронной почты");
             }
         }
     }
 
     private List<Future> filterListSecondStage() {
         List<Future> futureList = new ArrayList<>();
+
 
         for (String domain : inEmails.keySet()) {
             try {
@@ -230,13 +225,15 @@ public class Validator extends Application {
 
                     Future f = service.submit(new TalkWithSMTP(inEmails.get(domain)));
 
-                    futureList.add(f);
+                    addToFutureList(f);
+
 
                 } else {
 
                     for (String email : inEmails.get(domain).getEmails()) {
-                        addFinalBadEmailtoFinalBadListPlease(email + ";" + "440 Почтового сервера не существует");
+                        addFinalBadEmailtoFinalBadListPlease(email + ";" + "440;Почтового сервера не существует");
                     }
+
                 }
 
             } catch (NamingException e) {
@@ -272,10 +269,6 @@ public class Validator extends Application {
         return temp;
     }
 
-    private void loadUnsubscruberList() {
-
-    }
-
     private void saveAllGoodToFile(File fileName, List<String> list) {
 
         try (FileWriter out = new FileWriter(fileName)
@@ -296,16 +289,4 @@ public class Validator extends Application {
 
     }
 
-    @Override
-    public void start(Stage primaryStage) throws Exception {
-        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/resources/fxml/uno.fxml"));
-        Parent root = fxmlLoader.load();
-        Scene scene = new Scene(root);
-        Stage stage = new Stage();
-        stage.setTitle("Validation-Emails-List");
-        stage.setResizable(true);
-        stage.setScene(scene);
-        stage.show();
-
-    }
 }

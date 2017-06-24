@@ -60,8 +60,8 @@ public class TalkWithSMTP implements Runnable {
         }
 
 
-        String HELO = "HELO " + Validator.property.getProperty("mxDomain");
-        String MAIL_FROM = "MAIL FROM:<" + Validator.property.getProperty("mailFrom") + ">";
+        String HELO = "HELO " + Validator.property.getProperty(C.MX_DOMAIN);
+        String MAIL_FROM = "MAIL FROM:<" + Validator.property.getProperty(C.MAIL_FROM) + ">";
 
 
         for (List<String> partOfemails : emails) {
