@@ -1,11 +1,18 @@
 package ru.maximkulikov.validationemaillist;
 
-import java.io.*;
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.naming.NamingException;
+import javafx.application.Platform;
+import javafx.scene.control.Label;
+import javafx.scene.control.ProgressBar;
+import javafx.scene.layout.HBox;
 
 
 /**
@@ -17,18 +24,20 @@ import javax.naming.NamingException;
 public class TalkWithSMTP implements Runnable {
 
     private static final int SERVER_PORT = 25;
-
+    HBox hbox;
+    ProgressBar midprogress;
     private PrintStream ps = null;
-
     private DataInputStream dis = null;
-
     private Domain domain;
-
     private List<List<String>> emails = new ArrayList();
 
     public TalkWithSMTP(Domain domain) {
 
         this.domain = domain;
+        hbox = new HBox();
+
+        midprogress = new ProgressBar();
+        midprogress.setProgress(0.0);
 
         List<String> inside = new ArrayList<>();
         int count = 0;
@@ -44,12 +53,38 @@ public class TalkWithSMTP implements Runnable {
         }
     }
 
+    public String receive() throws IOException {
+        String readstr;
+        readstr = this.dis.readLine();
+     //   System.out.println("SMTP respons: " + readstr);
+        return readstr;
+    }
+
     @Override
     public void run() {
         Thread.currentThread().setName("Thread " + domain.getName());
 
 
         System.out.println("Starting " + Thread.currentThread().getName());
+
+        if (Validator.gui != null) {
+
+            Platform.runLater(() -> {
+
+                Label l = new Label();
+                l.setText(domain.getName());
+                l.setMinWidth(50.0);
+                l.setPrefWidth(50.0);
+                l.setMaxWidth(50.0);
+
+                hbox.getChildren().add(l);
+                hbox.getChildren().add(midprogress);
+
+                Validator.gui.getVbProgress().getChildren().add(midprogress);
+            });
+
+
+        }
 
         String[] attr = new String[1];
         try {
@@ -63,8 +98,14 @@ public class TalkWithSMTP implements Runnable {
         String HELO = "HELO " + Validator.property.getProperty(C.MX_DOMAIN);
         String MAIL_FROM = "MAIL FROM:<" + Validator.property.getProperty(C.MAIL_FROM) + ">";
 
+        double count = 0.0;
 
         for (List<String> partOfemails : emails) {
+
+            if (Validator.gui != null) {
+                double finalCount = count;
+                Platform.runLater(() -> midprogress.setProgress(finalCount / emails.size()));
+            }
 
             Socket smtp = null;
 
@@ -108,9 +149,24 @@ public class TalkWithSMTP implements Runnable {
             } catch (IOException e) {
                 System.out.println("Error sending: " + e);
             }
-
+            count++;
         }
 
+        if (Validator.gui != null) {
+            System.out.println("......removing hbox" + domain.getName());
+
+            Platform.runLater(() -> {
+                hbox.getChildren().clear();
+                Validator.gui.getVbProgress().getChildren().remove(hbox);
+            });
+        }
+
+    }
+
+    public void send(String str) throws IOException {
+        this.ps.println(str);
+        this.ps.flush();
+        //   System.out.println("Java sent: " + str);
     }
 
     private void sleep(int i) {
@@ -121,18 +177,5 @@ public class TalkWithSMTP implements Runnable {
         }
     }
 
-
-    public void send(String str) throws IOException {
-        this.ps.println(str);
-        this.ps.flush();
-        //   System.out.println("Java sent: " + str);
-    }
-
-    public String receive() throws IOException {
-        String readstr;
-        readstr = this.dis.readLine();
-        System.out.println("SMTP respons: " + readstr);
-        return readstr;
-    }
 
 }

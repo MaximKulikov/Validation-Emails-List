@@ -1,6 +1,6 @@
 package ru.maximkulikov.validationemaillist.controllers;
 
-import java.awt.*;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -12,6 +12,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import ru.maximkulikov.validationemaillist.C;
 import ru.maximkulikov.validationemaillist.Validator;
@@ -20,7 +21,7 @@ public class Uno {
 
     final FileChooser fileChooser = new FileChooser();
 
-    private Desktop desktop = Desktop.getDesktop();
+    private java.awt.Desktop desktop = java.awt.Desktop.getDesktop();
 
     private boolean[] ready = {false, false, false, false};
 
@@ -34,17 +35,20 @@ public class Uno {
     private TextField taMailFrom, taMailServer, taSubsList, taUnSubsList;
 
     @FXML
-    private Button butProcessData;
+    private Button butProcessData, butGoodEmails, butBadEmails;
 
     @FXML
     private ProgressBar progress;
+
+    @FXML
+    private VBox vbProgress;
 
     @FXML
     void butActionProcessData(ActionEvent event) {
         butProcessData.setDisable(true);
         butProcessData.setText("Progress...");
         progress.setVisible(true);
-        new Thread(()-> new Validator().execute()).start();
+        new Thread(() -> new Validator().execute()).start();
 
 
     }
@@ -96,11 +100,17 @@ public class Uno {
         );
         fileChooser.getExtensionFilters().addAll(
 
-                new FileChooser.ExtensionFilter("TXT", "*.txt")
+                new FileChooser.ExtensionFilter("TXT", "*.txt"),
+                new FileChooser.ExtensionFilter("CVS", "*.csv")
+
 
         );
         return fileChooser.showOpenDialog(taMailFrom.getScene().getWindow());
 
+    }
+
+    public VBox getVbProgress() {
+        return vbProgress;
     }
 
     @FXML
@@ -124,20 +134,17 @@ public class Uno {
         }
 
 
-        taMailFrom.focusedProperty().addListener(new ChangeListener<Boolean>() {
-            @Override
-            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-                if (newValue) {
+        taMailFrom.focusedProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue) {
 
-                    taMailFrom.setStyle("-fx-background-color: burlywood");
-                } else {
-                    taMailFrom.setStyle(null);
-                    String mailFrom = taMailFrom.getText();
+                taMailFrom.setStyle("-fx-background-color: burlywood");
+            } else {
+                taMailFrom.setStyle(null);
+                String mailFrom1 = taMailFrom.getText();
 
-                    if (mailFrom != null && mailFrom != "") {
-                        Validator.saveProperty(C.MAIL_FROM, mailFrom.trim());
-                        changeReady(0, true);
-                    }
+                if (mailFrom1 != null && mailFrom1 != "") {
+                    Validator.saveProperty(C.MAIL_FROM, mailFrom1.trim());
+                    changeReady(0, true);
                 }
             }
         });
@@ -166,15 +173,33 @@ public class Uno {
 
     }
 
-    private void openFile(File file) {
-        try {
-            desktop.open(file);
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-    }
 
     public void setProgress(double v) {
         progress.setProgress(v);
+    }
+
+    public void showResults(File goodFile, File badFile) {
+
+        butGoodEmails.setOnAction(event -> {
+
+            try {
+                desktop.open(goodFile);
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        });
+
+        butBadEmails.setOnAction(event -> {
+
+            try {
+                desktop.open(badFile);
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        });
+
+        progress.setVisible(false);
+        butGoodEmails.setVisible(true);
+        butBadEmails.setVisible(true);
     }
 }

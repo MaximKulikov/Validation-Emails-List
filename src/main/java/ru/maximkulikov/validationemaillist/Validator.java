@@ -183,17 +183,17 @@ public class Validator {
         Date d = new Date();
         SimpleDateFormat sdf = new SimpleDateFormat("D_d.M.Y", Locale.ENGLISH);
         String date = sdf.format(d);
-        File goodFile = createNewFile("GoodEmails_" + date + ".txt");
-        File badFile = createNewFile("BadEmails_" + date + ".txt");
+        File goodFile = createNewFile("GoodEmails_" + date + ".csv");
+        File badFile = createNewFile("BadEmails_" + date + ".csv");
 
         ArrayList<String> list = new ArrayList<>();
         list.addAll(blackEmailsSet);
 
-        saveAllGoodToFile(goodFile, finalGoodEmails);
-        saveAllGoodToFile(badFile, list);
+        saveAllToFile(goodFile, finalGoodEmails);
+        saveAllToFile(badFile, list);
 
         System.out.println("is it now end?");
-        System.exit(0);
+        gui.showResults(goodFile, badFile);
 
     }
 
@@ -269,7 +269,7 @@ public class Validator {
         return temp;
     }
 
-    private void saveAllGoodToFile(File fileName, List<String> list) {
+    private void saveAllToFile(File fileName, List<String> list) {
 
         try (FileWriter out = new FileWriter(fileName)
              ; BufferedWriter bw = new BufferedWriter(out)) {
