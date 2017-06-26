@@ -39,4 +39,10 @@ public class Main extends Application {
         stage.show();
 
     }
+
+    @Override
+    public void stop() throws Exception {
+        super.stop();
+        System.exit(0);
+    }
 }

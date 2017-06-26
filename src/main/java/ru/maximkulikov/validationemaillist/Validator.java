@@ -59,7 +59,7 @@ public class Validator {
         }
     }
 
-    static Attribute doLookup(String hostName) throws NamingException {
+    private static Attribute doLookup(String hostName) throws NamingException {
         Hashtable env = new Hashtable();
         env.put("java.naming.factory.initial",
                 "com.sun.jndi.dns.DnsContextFactory");

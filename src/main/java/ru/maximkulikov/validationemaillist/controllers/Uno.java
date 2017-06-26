@@ -3,8 +3,6 @@ package ru.maximkulikov.validationemaillist.controllers;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
-import java.util.ResourceBundle;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
@@ -19,17 +17,11 @@ import ru.maximkulikov.validationemaillist.Validator;
 
 public class Uno {
 
-    final FileChooser fileChooser = new FileChooser();
+    private final FileChooser fileChooser = new FileChooser();
 
     private java.awt.Desktop desktop = java.awt.Desktop.getDesktop();
 
     private boolean[] ready = {false, false, false, false};
-
-    @FXML
-    private ResourceBundle resources;
-
-    @FXML
-    private URL location;
 
     @FXML
     private TextField taMailFrom, taMailServer, taSubsList, taUnSubsList;
@@ -49,8 +41,6 @@ public class Uno {
         butProcessData.setText("Progress...");
         progress.setVisible(true);
         new Thread(() -> new Validator().execute()).start();
-
-
     }
 
     @FXML
@@ -142,7 +132,7 @@ public class Uno {
                 taMailFrom.setStyle(null);
                 String mailFrom1 = taMailFrom.getText();
 
-                if (mailFrom1 != null && mailFrom1 != "") {
+                if (mailFrom1 != null && !mailFrom1.equals("")) {
                     Validator.saveProperty(C.MAIL_FROM, mailFrom1.trim());
                     changeReady(0, true);
                 }
@@ -160,7 +150,7 @@ public class Uno {
                     taMailServer.setStyle(null);
 
                     String mxDomain = taMailServer.getText();
-                    if (mxDomain != null && mxDomain != "") {
+                    if (mxDomain != null && !mxDomain.equals("")) {
                         Validator.saveProperty(C.MX_DOMAIN, mxDomain.trim());
                         changeReady(1, true);
 

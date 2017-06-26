@@ -12,7 +12,7 @@ import javax.naming.directory.Attribute;
  */
 public class Domain {
 
-    Attribute attr;
+    private Attribute attr;
 
     private String name;
 

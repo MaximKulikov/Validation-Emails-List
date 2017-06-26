@@ -24,8 +24,8 @@ import javafx.scene.layout.HBox;
 public class TalkWithSMTP implements Runnable {
 
     private static final int SERVER_PORT = 25;
-    HBox hbox;
-    ProgressBar midprogress;
+    private HBox hbox;
+    private ProgressBar midprogress;
     private PrintStream ps = null;
     private DataInputStream dis = null;
     private Domain domain;
@@ -121,15 +121,15 @@ public class TalkWithSMTP implements Runnable {
 
             try {
 
-                String openConnection = receive();
+                receive();
 
                 send(HELO);
                 sleep(5);
-                String answerHelo = receive();
+                receive();
 
                 send(MAIL_FROM);
                 sleep(5);
-                String answerMailFrom = receive();
+                receive();
 
                 for (String email : partOfemails) {
 
