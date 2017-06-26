@@ -9,6 +9,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 import javax.naming.NamingException;
+
 import javafx.application.Platform;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
@@ -25,7 +26,8 @@ public class TalkWithSMTP implements Runnable {
 
     private static final int SERVER_PORT = 25;
     private HBox hbox;
-    private ProgressBar midprogress;
+    private ProgressBar midProgress;
+    private Label progresLabel;
     private PrintStream ps = null;
     private DataInputStream dis = null;
     private Domain domain;
@@ -36,8 +38,10 @@ public class TalkWithSMTP implements Runnable {
         this.domain = domain;
         hbox = new HBox();
 
-        midprogress = new ProgressBar();
-        midprogress.setProgress(0.0);
+        midProgress = new ProgressBar();
+        midProgress.setProgress(0.0d);
+
+        progresLabel = new Label(domain.getName());
 
         List<String> inside = new ArrayList<>();
         int count = 0;
@@ -56,7 +60,7 @@ public class TalkWithSMTP implements Runnable {
     public String receive() throws IOException {
         String readstr;
         readstr = this.dis.readLine();
-     //   System.out.println("SMTP respons: " + readstr);
+        //   System.out.println("SMTP respons: " + readstr);
         return readstr;
     }
 
@@ -65,22 +69,23 @@ public class TalkWithSMTP implements Runnable {
         Thread.currentThread().setName("Thread " + domain.getName());
 
 
-        System.out.println("Starting " + Thread.currentThread().getName());
+     //   System.out.println("Starting " + Thread.currentThread().getName());
 
         if (Validator.gui != null) {
 
             Platform.runLater(() -> {
 
-                Label l = new Label();
+         /*       Label l = new Label();
                 l.setText(domain.getName());
                 l.setMinWidth(50.0);
                 l.setPrefWidth(50.0);
                 l.setMaxWidth(50.0);
 
                 hbox.getChildren().add(l);
-                hbox.getChildren().add(midprogress);
+                hbox.getChildren().add(midProgress);*/
 
-                Validator.gui.getVbProgress().getChildren().add(midprogress);
+                Validator.gui.getVbProgress().getChildren().add(midProgress);
+                Validator.gui.getVbProgress().getChildren().add(progresLabel);
             });
 
 
@@ -104,7 +109,10 @@ public class TalkWithSMTP implements Runnable {
 
             if (Validator.gui != null) {
                 double finalCount = count;
-                Platform.runLater(() -> midprogress.setProgress(finalCount / emails.size()));
+                Platform.runLater(() -> {
+                    midProgress.setProgress(finalCount / emails.size());
+                    System.out.println(domain.getName() + ":" + String.valueOf(finalCount / emails.size()));
+                });
             }
 
             Socket smtp = null;
@@ -134,14 +142,14 @@ public class TalkWithSMTP implements Runnable {
                 for (String email : partOfemails) {
 
                     send("RCPT TO:<" + email + ">");
-                    sleep(200);
+                    sleep(100);
                     String answer = receive();
 
                     if (answer.startsWith("250 ")) {
                         Validator.addFinalGoodEmailToFinalGoodListPlease(email);
                     } else {
                         System.out.println("NOT 250: " + email + " " + answer);
-                        Validator.addFinalBadEmailtoFinalBadListPlease(email + ";" + answer);
+                        Validator.addFinalBadEmailtoFinalBadListPlease(email + ";" + answer.substring(0, 3) + ";" + answer);
                     }
                 }
 
@@ -156,8 +164,10 @@ public class TalkWithSMTP implements Runnable {
             System.out.println("......removing hbox" + domain.getName());
 
             Platform.runLater(() -> {
-                hbox.getChildren().clear();
-                Validator.gui.getVbProgress().getChildren().remove(hbox);
+              /*  hbox.getChildren().remove(midProgress);
+                hbox.getChildren().clear();*/
+                Validator.gui.getVbProgress().getChildren().remove(midProgress);
+                Validator.gui.getVbProgress().getChildren().remove(progresLabel);
             });
         }
 

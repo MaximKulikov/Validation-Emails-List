@@ -44,9 +44,9 @@
       <ProgressBar fx:id="progress" layoutX="38.0" layoutY="315.0" prefHeight="18.0" prefWidth="280.0" visible="false" />
       <Button fx:id="butGoodEmails" layoutX="78.0" layoutY="347.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="199.0" text="Open file with Good Emails" visible="false" />
       <Button fx:id="butBadEmails" layoutX="312.0" layoutY="347.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="199.0" text="Open file with Bad Emails" visible="false" />
-      <ScrollPane hbarPolicy="NEVER" layoutX="344.0" layoutY="14.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="350.0" prefWidth="250.0">
+      <ScrollPane hbarPolicy="NEVER" layoutX="344.0" layoutY="14.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="299.0" prefWidth="250.0">
          <content>
-            <VBox fx:id="vbProgress" prefHeight="343.0" prefWidth="250.0" />
+            <VBox fx:id="vbProgress" prefHeight="292.0" prefWidth="250.0" />
          </content>
       </ScrollPane>
    </children>

@@ -207,7 +207,7 @@ public class Validator {
                     System.out.println("Exception " + s);
                 }
             } else {
-                addFinalBadEmailtoFinalBadListPlease(s + ";" + "500;Не является адресом электронной почты");
+                addFinalBadEmailtoFinalBadListPlease(s + ";" + "502; Not email at all");
             }
         }
     }
@@ -231,7 +231,7 @@ public class Validator {
                 } else {
 
                     for (String email : inEmails.get(domain).getEmails()) {
-                        addFinalBadEmailtoFinalBadListPlease(email + ";" + "440;Почтового сервера не существует");
+                        addFinalBadEmailtoFinalBadListPlease(email + ";" + "501;Mail server not exist");
                     }
 
                 }
