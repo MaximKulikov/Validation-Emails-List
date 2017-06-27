@@ -14,4 +14,6 @@ public class C {
     public static final String SUB_LIST  = "subList";
 
     public static final String UNSUB_LIST = "unsubList";
+
+    public static final String WHITE_LIST = "whiteList";
 }

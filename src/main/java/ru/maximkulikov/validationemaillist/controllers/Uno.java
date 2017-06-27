@@ -3,13 +3,12 @@ package ru.maximkulikov.validationemaillist.controllers;
 
 import java.io.File;
 import java.io.IOException;
+
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.ProgressBar;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import ru.maximkulikov.validationemaillist.C;
@@ -21,10 +20,10 @@ public class Uno {
 
     private java.awt.Desktop desktop = java.awt.Desktop.getDesktop();
 
-    private boolean[] ready = {false, false, false, false};
+    private boolean[] ready = {false, false, false};
 
     @FXML
-    private TextField taMailFrom, taMailServer, taSubsList, taUnSubsList;
+    private TextField taMailFrom, taMailServer, taSubsList, taUnSubsList, taWhiteList;
 
     @FXML
     private Button butProcessData, butGoodEmails, butBadEmails;
@@ -34,6 +33,9 @@ public class Uno {
 
     @FXML
     private VBox vbProgress;
+
+    @FXML
+    private Label checkLabel, blackLabel, whiteLabel;
 
     @FXML
     void butActionProcessData(ActionEvent event) {
@@ -65,6 +67,17 @@ public class Uno {
             taUnSubsList.setText(file.getName());
 
             Validator.saveProperty(C.UNSUB_LIST, file.getAbsolutePath());
+            changeReady(3, true);
+        }
+    }
+
+    @FXML
+    void butChooseWhite(ActionEvent event) {
+        File file = chooseFile();
+        if (file != null) {
+            taWhiteList.setText(file.getName());
+
+            Validator.saveProperty(C.WHITE_LIST, file.getAbsolutePath());
             changeReady(3, true);
         }
     }
@@ -108,7 +121,7 @@ public class Uno {
 
         Validator.gui = this;
 
-        butProcessData.setDisable(false);
+        butProcessData.setDisable(true);
 
         String mailFrom = Validator.property.getProperty(C.MAIL_FROM);
         if (mailFrom != null) {
@@ -155,12 +168,54 @@ public class Uno {
                         changeReady(1, true);
 
                     }
-
                 }
             }
         });
 
 
+        String processFile = Validator.property.getProperty(C.SUB_LIST);
+
+        if (processFile != null && !processFile.equals("")) {
+            File file = new File(processFile);
+            if (file.exists()) {
+                taSubsList.setText(file.getName());
+                changeReady(2, true);
+            } else {
+                Validator.property.setProperty(C.SUB_LIST,"");
+            }
+
+        }
+
+String blackFile = Validator.property.getProperty(C.UNSUB_LIST);
+
+        if (blackFile != null && !blackFile.equals("")) {
+            File file = new File(blackFile);
+            if (file.exists()) {
+                taUnSubsList.setText(file.getName());
+            } else {
+                Validator.property.setProperty(C.UNSUB_LIST,"");
+            }
+
+        }
+
+        String whiteFile = Validator.property.getProperty(C.WHITE_LIST);
+
+        if (whiteFile != null && !whiteFile.equals("")) {
+            File file = new File(whiteFile);
+
+            if (file.exists()) {
+                taWhiteList.setText(file.getName());
+            } else {
+                Validator.property.setProperty(C.WHITE_LIST,"");
+            }
+
+        }
+
+
+
+        checkLabel.setTooltip(new Tooltip("Select the list of emails to check"));
+        blackLabel.setTooltip(new Tooltip("Select the list of emails that you want to remove without checking"));
+        whiteLabel.setTooltip(new Tooltip("Select the list of emails that will be added to the output file without checking this time"));
     }
 
 

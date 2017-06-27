@@ -11,6 +11,7 @@ import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.DirContext;
 import javax.naming.directory.InitialDirContext;
+
 import javafx.application.Platform;
 import ru.maximkulikov.validationemaillist.controllers.Uno;
 
@@ -157,10 +158,35 @@ public class Validator {
 
         Set<String> processSet = loadEmailsToProcess(new File(property.getProperty(C.SUB_LIST)));
 
-        Set<String> unsubscribedList = loadEmailsToProcess(new File(property.getProperty(C.UNSUB_LIST)));
+
+        String blackFile = Validator.property.getProperty(C.UNSUB_LIST);
+
+        Set<String> unsubscribedList;
+
+        if (blackFile != null && !blackFile.equals("")) {
+            unsubscribedList = loadEmailsToProcess(new File(blackFile));
+        } else {
+            unsubscribedList = new HashSet<>();
+        }
+
+
+        String whiteFile = Validator.property.getProperty(C.UNSUB_LIST);
+
+        Set<String> whiteList;
+
+        if (whiteFile != null && !whiteFile.equals("")) {
+            whiteList = loadEmailsToProcess(new File(whiteFile));
+        } else {
+            whiteList = new HashSet<>();
+        }
 
 
         processSet.removeAll(unsubscribedList);
+
+        processSet.removeAll(whiteList);
+
+
+        finalGoodEmails.addAll(whiteList);
 
         //Простая проверка паттерна адреса
         filterListFirstStage(processSet);
