@@ -2,11 +2,24 @@
 
 Program check every email in list for existence and split into 2 files with good and bad emails.
 
-##How to?
+## How to?
 
-1. Download .jar
+It requre Oracle Java SE for JavaFX interface. It probably work at OpenJDK aswell, but edit config.properties before run.
 
-https://github.com/Trinion/Validation-Emails-List/releases/tag/1.0 
+
+1. [Download .jar](https://github.com/Trinion/Validation-Emails-List/releases/)  
+2. Double click it or start from console by `java -jar Validation-List-of-Emails.jar`  
+3. Set fields (first 3 require)
+
+Note:
+I. Run it under same public IP as you standalone mail server (Exchange, Postfix, etc).  
+II. Set any real email from poll you standalone server handle.  
+III. Set HELO/EHLO value same as your mail server use.  
+IV. Otherwise it be lot of false results 
+
+4. 
+
+
 
 For Oracle JAVA SE:
 
@@ -32,7 +45,7 @@ You need Oracle Java SE 1.8+ for gui, otherwise preconfig `config.properties` an
  
  Some outdated night text below..
  
- P.S. never edit readme after 2AM.
+ 
 
 
 

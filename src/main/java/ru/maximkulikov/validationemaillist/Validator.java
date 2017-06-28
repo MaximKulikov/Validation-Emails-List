@@ -26,12 +26,18 @@ public class Validator {
     public static final Properties property = new Properties();
 
     public static Uno gui;
+
     private static ExecutorService service;
+
     //Список хороших адресов, после обработки
     private static List<String> finalGoodEmails = new ArrayList<>();
+
     //Список неадекватных адресов
+
     private static Set<String> blackEmailsSet = new HashSet<>();
+
     private final int NUMBER_OF_PROCESSORS;
+
     //Список адресов, с которыми происходит магия
     private Map<String, Domain> inEmails = new HashMap<>();
 
@@ -146,6 +152,7 @@ public class Validator {
 
     private boolean doesMatchPattern(String line) {
 
+        //TODO Should be more complicated with Pattern and Match
         return line.contains("@");
     }
 
@@ -153,11 +160,8 @@ public class Validator {
 
         service = Executors.newFixedThreadPool(NUMBER_OF_PROCESSORS);
 
-        //Получаем доступ к файлу
-
-
+        //TODO Could be NULL. need check for exist(), caraful with no gui start
         Set<String> processSet = loadEmailsToProcess(new File(property.getProperty(C.SUB_LIST)));
-
 
         String blackFile = Validator.property.getProperty(C.UNSUB_LIST);
 
@@ -185,7 +189,7 @@ public class Validator {
 
         processSet.removeAll(whiteList);
 
-
+//TODO careful with multythread use that list, but no threads start yet.
         finalGoodEmails.addAll(whiteList);
 
         //Простая проверка паттерна адреса
@@ -193,7 +197,6 @@ public class Validator {
 
         //Проверка домена на существование MX
         filterListSecondStage();
-
 
         while (futureList.size() > 0) {
             //     System.out.println("Size is " + futureList.size());
@@ -241,7 +244,6 @@ public class Validator {
     private List<Future> filterListSecondStage() {
         List<Future> futureList = new ArrayList<>();
 
-
         for (String domain : inEmails.keySet()) {
             try {
                 Attribute attributes = doLookup(domain);
@@ -253,13 +255,11 @@ public class Validator {
 
                     addToFutureList(f);
 
-
                 } else {
 
                     for (String email : inEmails.get(domain).getEmails()) {
-                        addFinalBadEmailtoFinalBadListPlease(email + ";" + "501;Mail server not exist");
+                        addFinalBadEmailtoFinalBadListPlease(email + ";501;Mail server not exist");
                     }
-
                 }
 
             } catch (NamingException e) {

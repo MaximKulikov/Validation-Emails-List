@@ -223,6 +223,12 @@ String blackFile = Validator.property.getProperty(C.UNSUB_LIST);
         progress.setProgress(v);
     }
 
+    @FXML
+    void clickProjectWebSite(ActionEvent event) {
+
+        C.openBrowser(C.Project_WEBSITE);
+    }
+
     public void showResults(File goodFile, File badFile) {
 
         butGoodEmails.setOnAction(event -> {

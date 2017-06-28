@@ -74,16 +74,6 @@ public class TalkWithSMTP implements Runnable {
         if (Validator.gui != null) {
 
             Platform.runLater(() -> {
-
-         /*       Label l = new Label();
-                l.setText(domain.getName());
-                l.setMinWidth(50.0);
-                l.setPrefWidth(50.0);
-                l.setMaxWidth(50.0);
-
-                hbox.getChildren().add(l);
-                hbox.getChildren().add(midProgress);*/
-
                 Validator.gui.getVbProgress().getChildren().add(midProgress);
                 Validator.gui.getVbProgress().getChildren().add(progresLabel);
             });
@@ -164,8 +154,7 @@ public class TalkWithSMTP implements Runnable {
             System.out.println("......removing hbox" + domain.getName());
 
             Platform.runLater(() -> {
-              /*  hbox.getChildren().remove(midProgress);
-                hbox.getChildren().clear();*/
+
                 Validator.gui.getVbProgress().getChildren().remove(midProgress);
                 Validator.gui.getVbProgress().getChildren().remove(progresLabel);
             });
