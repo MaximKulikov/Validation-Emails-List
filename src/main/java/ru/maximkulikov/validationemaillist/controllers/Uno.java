@@ -26,7 +26,7 @@ public class Uno {
     private TextField taMailFrom, taMailServer, taSubsList, taUnSubsList, taWhiteList;
 
     @FXML
-    private Button butProcessData, butGoodEmails, butBadEmails;
+    private Button butProcessData, butGoodEmails, butBadEmails, butSubs, butUnSubs, butWhite;
 
     @FXML
     private ProgressBar progress;
@@ -39,8 +39,16 @@ public class Uno {
 
     @FXML
     void butActionProcessData(ActionEvent event) {
-        butProcessData.setDisable(true);
+
         butProcessData.setText("Progress...");
+        butProcessData.setDisable(true);
+        taMailFrom.setDisable(true);
+        taMailServer.setDisable(true);
+        butSubs.setDisable(true);
+        butUnSubs.setDisable(true);
+        butWhite.setDisable(true);
+
+
         progress.setVisible(true);
         new Thread(() -> new Validator().execute()).start();
     }
@@ -181,19 +189,19 @@ public class Uno {
                 taSubsList.setText(file.getName());
                 changeReady(2, true);
             } else {
-                Validator.property.setProperty(C.SUB_LIST,"");
+                Validator.property.setProperty(C.SUB_LIST, "");
             }
 
         }
 
-String blackFile = Validator.property.getProperty(C.UNSUB_LIST);
+        String blackFile = Validator.property.getProperty(C.UNSUB_LIST);
 
         if (blackFile != null && !blackFile.equals("")) {
             File file = new File(blackFile);
             if (file.exists()) {
                 taUnSubsList.setText(file.getName());
             } else {
-                Validator.property.setProperty(C.UNSUB_LIST,"");
+                Validator.property.setProperty(C.UNSUB_LIST, "");
             }
 
         }
@@ -206,11 +214,10 @@ String blackFile = Validator.property.getProperty(C.UNSUB_LIST);
             if (file.exists()) {
                 taWhiteList.setText(file.getName());
             } else {
-                Validator.property.setProperty(C.WHITE_LIST,"");
+                Validator.property.setProperty(C.WHITE_LIST, "");
             }
 
         }
-
 
 
         checkLabel.setTooltip(new Tooltip("Select the list of emails to check"));

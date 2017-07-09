@@ -160,8 +160,12 @@ public class Validator {
 
         service = Executors.newFixedThreadPool(NUMBER_OF_PROCESSORS);
 
-        //TODO Could be NULL. need check for exist(), caraful with no gui start
-        Set<String> processSet = loadEmailsToProcess(new File(property.getProperty(C.SUB_LIST)));
+        String processPath = Validator.property.getProperty(C.SUB_LIST);
+        if (processPath == null || processPath.equals("")) {
+            System.exit(1);
+        }
+
+        Set<String> processSet = loadEmailsToProcess(new File(processPath));
 
         String blackFile = Validator.property.getProperty(C.UNSUB_LIST);
 
@@ -174,7 +178,7 @@ public class Validator {
         }
 
 
-        String whiteFile = Validator.property.getProperty(C.UNSUB_LIST);
+        String whiteFile = Validator.property.getProperty(C.WHITE_LIST);
 
         Set<String> whiteList;
 
@@ -189,7 +193,6 @@ public class Validator {
 
         processSet.removeAll(whiteList);
 
-//TODO careful with multythread use that list, but no threads start yet.
         finalGoodEmails.addAll(whiteList);
 
         //Простая проверка паттерна адреса

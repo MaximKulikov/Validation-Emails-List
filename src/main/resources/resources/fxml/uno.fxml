@@ -30,20 +30,20 @@
             <HBox alignment="CENTER_LEFT" prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
                <children>
                   <TextField fx:id="taSubsList" />
-                  <Button mnemonicParsing="false" onAction="#butChooseSubs" prefHeight="25.0" prefWidth="100.0" text="..." />
+                  <Button fx:id="butSubs" mnemonicParsing="false" onAction="#butChooseSubs" prefHeight="25.0" prefWidth="100.0" text="..." />
                </children>
             </HBox>
             <HBox alignment="CENTER_LEFT" prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="3">
                <children>
                   <TextField fx:id="taUnSubsList" />
-                  <Button mnemonicParsing="false" onAction="#butChooseUnSubs" prefHeight="25.0" prefWidth="100.0" text="..." />
+                  <Button fx:id="butUnSubs" mnemonicParsing="false" onAction="#butChooseUnSubs" prefHeight="25.0" prefWidth="100.0" text="..." />
                </children>
             </HBox>
             <Label fx:id="whiteLabel" text="White List" wrapText="true" GridPane.rowIndex="4" />
-            <HBox prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="4">
+            <HBox alignment="CENTER_LEFT" prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="4">
                <children>
                   <TextField fx:id="taWhiteList" />
-                  <Button mnemonicParsing="false" onAction="#butChooseWhite" prefHeight="25.0" prefWidth="100.0" text="..." />
+                  <Button fx:id="butWhite" mnemonicParsing="false" onAction="#butChooseWhite" prefHeight="25.0" prefWidth="100.0" text="..." />
                </children>
             </HBox>
          </children>
