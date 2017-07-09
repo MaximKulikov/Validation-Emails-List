@@ -71,3 +71,7 @@ You need Oracle Java SE 1.8+ for gui, otherwise preconfig `config.properties` an
  6. watch chaos in console
  
  7. Done. there is 2 file in root directory
+ 
+ ## GUI Instriction
+ 
+![GUI](https://github.com/Trinion/Validation-Emails-List/blob/master/GUIinstruction.PNG?raw=true)
