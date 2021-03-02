@@ -32,6 +32,13 @@ import java.awt.FileDialog.SAVE
 import java.io.File
 import kotlin.system.exitProcess
 
+enum class JobStates {
+   PREPARATION,
+   IN_PROGRESS,
+   FINISHED
+}
+
+
 fun main() {
    val emailApplication = EmailApplication()
 
@@ -45,7 +52,7 @@ fun main() {
       }
    ) {
       val currentWindow = AppWindowAmbient.current!!
-      val isFinish = remember { mutableStateOf(false) }
+      val jobState = remember { mutableStateOf(JobStates.PREPARATION) }
 
       GavarentTheme {
          Row(
@@ -150,7 +157,7 @@ fun main() {
                         blackList.value = it
                      },
                      singleLine = true,
-                             modifier = Modifier.height(20.dp)
+                     modifier = Modifier.height(20.dp)
                   )
                   Spacer(Modifier.width(8.dp).height(8.dp))
                   Button(
@@ -184,7 +191,7 @@ fun main() {
                         whiteList.value = it
                      },
                      singleLine = true,
-                             modifier = Modifier.height(20.dp)
+                     modifier = Modifier.height(20.dp)
                   )
                   Spacer(Modifier.width(8.dp).height(8.dp))
                   Button(
@@ -208,19 +215,22 @@ fun main() {
                Row {
 
                   val progress = remember { mutableStateOf(0.0f) }
-                  if (!isFinish.value) {
+                  if (jobState.value == JobStates.PREPARATION) {
                      Button(onClick = {
+                        jobState.value = JobStates.IN_PROGRESS
                         GlobalScope.launch(Dispatchers.IO) {
                            emailApplication.process()
                            IntRange(0, 100).forEach {
                               delay(10)
                               progress.value = it / 100.0f
                            }
-                           isFinish.value = true
+                           jobState.value = JobStates.FINISHED
                         }
                      }) {
                         Text(text = "Начать")
                      }
+                  }
+                  if (jobState.value == JobStates.IN_PROGRESS) {
                      if (progress.value > 0.0) {
                         LinearProgressIndicator(
                            progress = progress.value,
@@ -229,7 +239,7 @@ fun main() {
                      }
                   }
 
-                  if (isFinish.value) {
+                  if (jobState.value == JobStates.FINISHED) {
                      Row {
                         Button(
                            onClick = {
