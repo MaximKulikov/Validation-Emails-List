@@ -1,9 +1,17 @@
 package ru.gavarent
 
+@ExperimentalStdlibApi
 class EmailApplication {
-   suspend fun process() {
-      TODO("Not yet implemented")
-   }
 
    val guiFields = GuiFields()
+   private val validator = Validator(guiFields)
+
+   @ExperimentalStdlibApi
+   suspend fun process() {
+      println("Начали парсить файлы")
+      validator.execute()
+
+
+   }
+
 }

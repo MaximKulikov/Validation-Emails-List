@@ -50,7 +50,7 @@ public class Uno {
 
 
         progress.setVisible(true);
-        new Thread(() -> new Validator().execute()).start();
+        new Thread(() -> new Validator(). ()).start();
     }
 
     @FXML

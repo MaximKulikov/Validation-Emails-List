@@ -1,6 +1,7 @@
 import androidx.compose.desktop.AppWindowAmbient
 import androidx.compose.desktop.Window
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Button
 import androidx.compose.material.LinearProgressIndicator
@@ -137,6 +138,7 @@ fun main() {
                            }
                         }
                      },
+                     enabled = jobState.value == JobStates.PREPARATION,
                      modifier = Modifier.width(24.dp).height(24.dp)
                   ) {
                      Text("...")
@@ -171,6 +173,7 @@ fun main() {
                            }
                         }
                      },
+                     enabled = jobState.value == JobStates.PREPARATION,
                      modifier = Modifier.width(24.dp).height(24.dp)
                   ) {
                      Text("...")
@@ -206,6 +209,7 @@ fun main() {
 
                         }
                      },
+                     enabled = jobState.value == JobStates.PREPARATION,
                      modifier = Modifier.width(24.dp).height(24.dp)
                   ) {
                      Text("...")
