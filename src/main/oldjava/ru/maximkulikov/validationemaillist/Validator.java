@@ -165,14 +165,14 @@ public class Validator {
             System.exit(1);
         }
 
-        Set<String> processSet = loadEmailsToProcess(new File(processPath));
+           Set<String> processSet = loadEmailsToProcess(new File(processPath));
 
-        String blackFile = Validator.property.getProperty(C.UNSUB_LIST);
+           String blackFile = Validator.property.getProperty(C.UNSUB_LIST);
 
-        Set<String> unsubscribedList;
+           Set<String> unsubscribedList;
 
-        if (blackFile != null && !blackFile.equals("")) {
-            unsubscribedList = loadEmailsToProcess(new File(blackFile));
+           if (blackFile != null && !blackFile.equals("")) {
+              unsubscribedList = loadEmailsToProcess(new File(blackFile));
         } else {
             unsubscribedList = new HashSet<>();
         }

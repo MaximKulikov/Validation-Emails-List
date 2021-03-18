@@ -2,6 +2,7 @@ package ru.gavarent
 
 import java.io.File
 
-suspend fun File.saveContent(emailList: List<String>) {
+ fun File.saveContent(emailList: List<String>) {
+   this.absoluteFile
    TODO("Not yet implemented")
 }

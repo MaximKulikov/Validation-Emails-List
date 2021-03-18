@@ -1,7 +1,9 @@
 package ru.gavarent
 
+import kotlinx.coroutines.*
 import java.io.File
 import java.util.*
+import java.util.concurrent.TimeUnit
 import javax.naming.directory.Attribute
 import javax.naming.directory.InitialDirContext
 
@@ -29,7 +31,23 @@ class Validator(
       val domainEmailsMap = filterListSecondStage(domainNameEmailsMap)
 
 
-      TODO("заполнить футуры")
+      runBlocking(Dispatchers.Default) {
+
+
+/*         val jobs = mutableListOf<Job>()
+         domainEmailsMap.entries.forEach {
+            val job = GlobalScope.launch(Dispatchers.IO) {
+               TalkWithSMTP(guiFields).run(it.key, it.value)
+            }
+            jobs.add(job)
+         }
+
+         jobs.joinAll()*/
+         println("Ждем 3 сек")
+         delay(TimeUnit.SECONDS.toMillis(3))
+         println("Подождали")
+         guiFields.jobFinish = true
+      }
    }
 
    private fun filterListSecondStage(map: Map<String, List<String>>): Map<Domain, List<String>> {

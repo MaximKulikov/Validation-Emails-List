@@ -40,6 +40,7 @@ enum class JobStates {
 }
 
 
+@OptIn(ExperimentalStdlibApi::class)
 fun main() {
    val emailApplication = EmailApplication()
 
@@ -54,6 +55,13 @@ fun main() {
    ) {
       val currentWindow = AppWindowAmbient.current!!
       val jobState = remember { mutableStateOf(JobStates.PREPARATION) }
+      emailApplication.guiFields.onChange = { _, _, newValue ->
+         println("Зашли $newValue")
+         if (newValue) {
+
+            jobState.value = JobStates.FINISHED
+         }
+      }
 
       GavarentTheme {
          Row(
@@ -120,6 +128,7 @@ fun main() {
                   )
                   TextField(
                      value = checkList.value,
+                     backgroundColor = Color.Black,
                      onValueChange = {
                         checkList.value = it
                      },
@@ -228,7 +237,7 @@ fun main() {
                               delay(10)
                               progress.value = it / 100.0f
                            }
-                           jobState.value = JobStates.FINISHED
+                           // jobState.value = JobStates.FINISHED
                         }
                      }) {
                         Text(text = "Начать")
