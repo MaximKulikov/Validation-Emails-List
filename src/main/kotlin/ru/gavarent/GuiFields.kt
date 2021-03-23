@@ -1,9 +1,6 @@
 package ru.gavarent
 
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import java.io.File
-import java.util.function.Consumer
 import kotlin.properties.Delegates
 import kotlin.reflect.KProperty
 
@@ -17,8 +14,9 @@ class GuiFields {
    var blackList: File? = null
    var whiteList: File? = null
 
-   var onChange: (property: KProperty<*>, oldValue: Boolean, newValue: Boolean) -> Unit = { _, _, newValue ->
-      println("Что-то пошло не по плану")
+   var onChange: ((Boolean) -> Unit)? = null
+   var jobFinish: Boolean by Delegates.observable(false) { _, _, newValue ->
+      println("Call jobFinish")
+      onChange?.invoke(newValue)
    }
-   var jobFinish: Boolean by Delegates.observable(false, onChange)
 }

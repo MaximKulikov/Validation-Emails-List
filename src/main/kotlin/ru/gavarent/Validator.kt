@@ -44,7 +44,7 @@ class Validator(
 
          jobs.joinAll()*/
          println("Ждем 3 сек")
-         delay(TimeUnit.SECONDS.toMillis(3))
+         delay(TimeUnit.SECONDS.toMillis(4))
          println("Подождали")
          guiFields.jobFinish = true
       }
