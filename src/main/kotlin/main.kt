@@ -1,5 +1,7 @@
+import androidx.compose.desktop.AppManager
 import androidx.compose.desktop.AppWindowAmbient
 import androidx.compose.desktop.Window
+import androidx.compose.desktop.WindowEvents
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
@@ -53,10 +55,14 @@ fun main() {
       val currentWindow = AppWindowAmbient.current!!
       val jobState = remember { mutableStateOf(JobStates.PREPARATION) }
       emailApplication.guiFields.onChange = { value ->
-         println("Зашли $value")
          if (value) {
             jobState.value = JobStates.FINISHED
          }
+      }
+      val totalProgress = remember { mutableStateOf(0f) }
+      emailApplication.guiFields.onTotalProgress = { it ->
+         totalProgress.value = it
+         println("${totalProgress.value}%")
       }
 
       GavarentTheme {
@@ -77,6 +83,8 @@ fun main() {
                   val checkList = remember { mutableStateOf(TextFieldValue()) }
                   val blackList = remember { mutableStateOf(TextFieldValue()) }
                   val whiteList = remember { mutableStateOf(TextFieldValue()) }
+                  realEmail.value = TextFieldValue("demo@localhosh.local")
+                  ehlo.value = TextFieldValue("ehlo localhost")
 
                   Row(
                      verticalAlignment = Alignment.CenterVertically,
@@ -159,7 +167,7 @@ fun main() {
                      TextField(
                         value = blackList.value,
                         onValueChange = {
-                        //   blackList.value = it
+                           //   blackList.value = it
                         },
                         singleLine = true,
                         modifier = Modifier
@@ -221,10 +229,7 @@ fun main() {
                   Spacer(Modifier.width(8.dp).height(8.dp))
                   Row {
 
-                     val progress = remember { mutableStateOf(0.0f) }
                      if (jobState.value == JobStates.PREPARATION) {
-
-
                         Button(onClick = {
                            snackBar.value = ""
                            if (emailApplication.guiFields.checkList != null &&
@@ -245,12 +250,11 @@ fun main() {
 
                      }
                      if (jobState.value == JobStates.IN_PROGRESS) {
-                        if (progress.value > 0.0) {
-                           LinearProgressIndicator(
-                              progress = progress.value,
-                              modifier = Modifier.fillMaxWidth()
-                           )
-                        }
+                        LinearProgressIndicator(
+                           progress = totalProgress.value,
+                           modifier = Modifier.fillMaxWidth()
+                        )
+
                      }
 
                      if (jobState.value == JobStates.FINISHED) {

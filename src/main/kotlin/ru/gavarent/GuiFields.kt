@@ -16,7 +16,11 @@ class GuiFields {
 
    var onChange: ((Boolean) -> Unit)? = null
    var jobFinish: Boolean by Delegates.observable(false) { _, _, newValue ->
-      println("Call jobFinish")
       onChange?.invoke(newValue)
+   }
+
+   var onTotalProgress: ((Float) -> Unit)? = null
+   var totalProgress: Float by Delegates.observable(0f) { _, _, newValue ->
+      onTotalProgress?.invoke(newValue)
    }
 }

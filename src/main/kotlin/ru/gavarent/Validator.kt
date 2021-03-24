@@ -2,8 +2,10 @@ package ru.gavarent
 
 import kotlinx.coroutines.*
 import java.io.File
+import java.lang.Exception
 import java.util.*
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
 import javax.naming.directory.Attribute
 import javax.naming.directory.InitialDirContext
 
@@ -28,35 +30,44 @@ class Validator(
 
       //Простая проверка паттерна адреса
       val domainNameEmailsMap = filterListFirstStage(nonValidationFinalEmails)
-      val domainEmailsMap = filterListSecondStage(domainNameEmailsMap)
-
+      val domainEmailsMap = filterListSecondStage(domainNameEmailsMap) { index ->
+         guiFields.totalProgress = (index.toFloat() / domainNameEmailsMap.size.toFloat()) / 2.0f
+      }
 
       runBlocking(Dispatchers.Default) {
 
-
-/*         val jobs = mutableListOf<Job>()
+         val jobs = mutableListOf<Job>()
+         val jobSize = AtomicInteger(0)
          domainEmailsMap.entries.forEach {
             val job = GlobalScope.launch(Dispatchers.IO) {
-               TalkWithSMTP(guiFields).run(it.key, it.value)
+               //TalkWithSMTP(guiFields).run(it.key, it.value)
+               delay(1000)
             }
             jobs.add(job)
+            println(jobSize.incrementAndGet())
+
+            job.invokeOnCompletion {
+               val size = jobs.size
+               guiFields.totalProgress =  ((size - jobSize.decrementAndGet()) / size.toFloat() / 2.0f) + 0.5f
+               println(guiFields.totalProgress)
+            }
          }
 
-         jobs.joinAll()*/
-         println("Ждем 3 сек")
-         delay(TimeUnit.SECONDS.toMillis(4))
-         println("Подождали")
+         jobs.joinAll()
          guiFields.jobFinish = true
       }
    }
 
-   private fun filterListSecondStage(map: Map<String, List<String>>): Map<Domain, List<String>> {
-      for (entry in map) {
+   private fun filterListSecondStage(
+      map: Map<String, List<String>>,
+      callback: (Int) -> Unit
+   ): Map<Domain, List<String>> {
+      map.onEachIndexed { index, entry ->
          doLookup(entry.key)?.let {
-
          } ?: run {
             guiFields.badEmails.addAll(entry.value.map { "$it;501;Mail server not exist" })
          }
+         callback.invoke(index)
       }
 
       val attributeMap = map.mapKeys {
@@ -77,12 +88,17 @@ class Validator(
    }
 
    private fun doLookup(domainName: String): Domain? {
-      val attribute: Attribute? = InitialDirContext(
-         Hashtable<String, String>().apply {
-            put("java.naming.factory.initial", "com.sun.jndi.dns.DnsContextFactory")
-         })
-         .getAttributes(domainName, arrayOf(MX_RECORD))
-         .get(MX_RECORD)
+      val attribute: Attribute? = try {
+         InitialDirContext(
+            Hashtable<String, String>().apply {
+               put("java.naming.factory.initial", "com.sun.jndi.dns.DnsContextFactory")
+            })
+            .getAttributes(domainName, arrayOf(MX_RECORD))
+            .get(MX_RECORD)
+      } catch (e: Exception) {
+         println("no domain $domainName ${e.message}")
+         null
+      }
       return attribute?.let { Domain(domainName, it) }
    }
 
