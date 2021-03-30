@@ -2,7 +2,6 @@ package ru.gavarent
 
 import java.io.File
 import kotlin.properties.Delegates
-import kotlin.reflect.KProperty
 
 //@Singleton
 class GuiFields {
@@ -14,13 +13,12 @@ class GuiFields {
    var blackList: File? = null
    var whiteList: File? = null
 
-   var onChange: ((Boolean) -> Unit)? = null
-   var jobFinish: Boolean by Delegates.observable(false) { _, _, newValue ->
-      onChange?.invoke(newValue)
-   }
+   var onTotalFinish: ((Boolean) -> Unit)? = null
 
    var onTotalProgress: ((Float) -> Unit)? = null
-   var totalProgress: Float by Delegates.observable(0f) { _, _, newValue ->
-      onTotalProgress?.invoke(newValue)
-   }
+
+   var onAddDomainProgress: ((domainName: String) -> Unit)? = null
+   var onRemoveDomainProgress: ((domainName: String) -> Unit)? = null
+   var valueDomainProgressMap = mutableMapOf<String, ((value: Float) -> Unit)>()
+
 }

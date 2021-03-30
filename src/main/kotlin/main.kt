@@ -1,13 +1,10 @@
-import androidx.compose.desktop.AppManager
 import androidx.compose.desktop.AppWindowAmbient
 import androidx.compose.desktop.Window
-import androidx.compose.desktop.WindowEvents
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.*
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -20,16 +17,13 @@ import androidx.compose.ui.window.KeyStroke
 import androidx.compose.ui.window.Menu
 import androidx.compose.ui.window.MenuBar
 import androidx.compose.ui.window.MenuItem
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import ru.gavarent.EmailApplication
-import ru.gavarent.GavarentTheme
-import ru.gavarent.saveContent
+import kotlinx.coroutines.*
+import ru.gavarent.*
 import java.awt.FileDialog
 import java.awt.FileDialog.LOAD
 import java.awt.FileDialog.SAVE
 import java.io.File
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.system.exitProcess
 
 enum class JobStates {
@@ -54,7 +48,7 @@ fun main() {
    ) {
       val currentWindow = AppWindowAmbient.current!!
       val jobState = remember { mutableStateOf(JobStates.PREPARATION) }
-      emailApplication.guiFields.onChange = { value ->
+      emailApplication.guiFields.onTotalFinish = { value ->
          if (value) {
             jobState.value = JobStates.FINISHED
          }
@@ -313,9 +307,43 @@ fun main() {
                Column(
                   modifier = Modifier
                      .width(250.dp)
-                     .height(400.dp)
-                     .background(Color.Green)
-               ) { }
+                     .height(400.dp),
+               ) {
+
+                  val domainsMap = remember { mutableMapOf<String, DomainProgress>() }
+                  val progressBars = remember { mutableStateListOf<DomainProgress>() }
+
+                  emailApplication.guiFields.onAddDomainProgress = { domainName ->
+                     DomainProgress(domainName, emailApplication.guiFields).also {
+                        domainsMap[domainName] = it
+                        progressBars.add(it)
+                     }
+                  }
+
+                  emailApplication.guiFields.onRemoveDomainProgress = { domainName ->
+                     domainsMap[domainName]?.also {
+                        progressBars.remove(it)
+                     }
+                  }
+
+                  LazyColumn {
+                     items(items = progressBars) { domainProgress ->
+                        Column(
+                           modifier = Modifier
+                              .padding(4.dp)
+                              .fillMaxWidth()
+                        ) {
+                           Text(
+                              text = domainProgress.name,
+                              modifier = Modifier
+                           )
+                           LinearProgressIndicator(
+                              progress = domainProgress.progressValue,
+                           )
+                        }
+                     }
+                  }
+               }
             }
             Row(
                modifier = Modifier.fillMaxSize(),
@@ -327,9 +355,7 @@ fun main() {
                   }
                }
             }
-
          }
-
       }
    }
 }

@@ -31,7 +31,8 @@ class Validator(
       //Простая проверка паттерна адреса
       val domainNameEmailsMap = filterListFirstStage(nonValidationFinalEmails)
       val domainEmailsMap = filterListSecondStage(domainNameEmailsMap) { index ->
-         guiFields.totalProgress = (index.toFloat() / domainNameEmailsMap.size.toFloat()) / 2.0f
+         val totalProgress = (index.toFloat() / domainNameEmailsMap.size.toFloat()) / 2.0f
+         guiFields.onTotalProgress?.invoke(totalProgress)
       }
 
       runBlocking(Dispatchers.Default) {
@@ -39,22 +40,23 @@ class Validator(
          val jobs = mutableListOf<Job>()
          val jobSize = AtomicInteger(0)
          domainEmailsMap.entries.forEach {
+            TODO("в мапе неочищенные домены")
             val job = GlobalScope.launch(Dispatchers.IO) {
-               //TalkWithSMTP(guiFields).run(it.key, it.value)
-               delay(1000)
+               TalkWithSMTP(guiFields).run(it.key, it.value)
             }
             jobs.add(job)
             println(jobSize.incrementAndGet())
 
             job.invokeOnCompletion {
                val size = jobs.size
-               guiFields.totalProgress =  ((size - jobSize.decrementAndGet()) / size.toFloat() / 2.0f) + 0.5f
-               println(guiFields.totalProgress)
+               val totalProgress =  ((size - jobSize.decrementAndGet()) / size.toFloat() / 2.0f) + 0.5f
+               println(totalProgress)
+               guiFields.onTotalProgress?.invoke(totalProgress)
             }
          }
 
          jobs.joinAll()
-         guiFields.jobFinish = true
+         guiFields.onTotalFinish?.invoke(true)
       }
    }
 

@@ -1,22 +1,43 @@
 package ru.gavarent
 
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 import java.io.BufferedReader
 import java.io.Closeable
 import java.io.InputStreamReader
 import java.io.PrintStream
 import java.net.Socket
+import kotlin.random.Random
 
 class TalkWithSMTP(private val guiFields: GuiFields) {
 
    suspend fun run(domain: Domain, emails: List<String>) {
       // TODO: 18.03.2021 добавить на гуи прогрес бар с 0 отметкой
-
+      withContext(Dispatchers.Main) {
+         guiFields.onAddDomainProgress?.invoke(domain.name)
+      }
       val chunkedEmails: List<List<String>> = emails.chunked(10)
       val host = domain.attribute.get().toString().split(" ")[1]
       val ehlo = guiFields.ehlo
       val mailFrom = "MAIL FROM:< ${guiFields.realEmail}>"
 
+      val times = Random.nextInt(10, 500)
+      repeat(times) {
+         val value = it / times.toFloat()
+         withContext(Dispatchers.Main) {
+            guiFields.valueDomainProgressMap[domain.name]?.invoke(value)
+         }
+         delay(20)
+      }
+
+      delay(1500)
+      withContext(Dispatchers.Main) {
+         println("remove 1 ${domain.name}")
+         guiFields.onRemoveDomainProgress?.invoke(domain.name)
+      }
+
+      return
       chunkedEmails.forEach { partOfEmails ->
 
 /*         метод(буфер, сокет, принтСтрим,..... , лямбду)*/
@@ -24,7 +45,7 @@ class TalkWithSMTP(private val guiFields: GuiFields) {
             socket.getOutputStream().use { outputStream ->
                PrintStream(outputStream).use { printStream ->
                   socket.getInputStream().use { inputStream ->
-                     BufferedReader(InputStreamReader(inputStream)).use {bufferedReader ->
+                     BufferedReader(InputStreamReader(inputStream)).use { bufferedReader ->
                         bufferedReader.readLine()
                         printStream.sendMessage(ehlo)
                         delay(5)
