@@ -2,9 +2,7 @@ package ru.gavarent
 
 import kotlinx.coroutines.*
 import java.io.File
-import java.lang.Exception
 import java.util.*
-import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 import javax.naming.directory.Attribute
 import javax.naming.directory.InitialDirContext
@@ -42,14 +40,14 @@ class Validator(
          domainEmailsMap.entries.forEach {
             TODO("в мапе неочищенные домены")
             val job = GlobalScope.launch(Dispatchers.IO) {
-               TalkWithSMTP(guiFields).run(it.key, it.value)
+               TalkWithSMTP(guiFields).execute(it.key, it.value)
             }
             jobs.add(job)
             println(jobSize.incrementAndGet())
 
             job.invokeOnCompletion {
                val size = jobs.size
-               val totalProgress =  ((size - jobSize.decrementAndGet()) / size.toFloat() / 2.0f) + 0.5f
+               val totalProgress = ((size - jobSize.decrementAndGet()) / size.toFloat() / 2.0f) + 0.5f
                println(totalProgress)
                guiFields.onTotalProgress?.invoke(totalProgress)
             }

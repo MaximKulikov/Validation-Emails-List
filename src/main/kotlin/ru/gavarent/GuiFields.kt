@@ -1,7 +1,6 @@
 package ru.gavarent
 
 import java.io.File
-import kotlin.properties.Delegates
 
 //@Singleton
 class GuiFields {
