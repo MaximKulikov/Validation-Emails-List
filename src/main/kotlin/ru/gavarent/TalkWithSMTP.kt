@@ -5,39 +5,26 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import java.io.PrintStream
 import java.net.Socket
-import kotlin.random.Random
 
 class TalkWithSMTP(private val guiFields: GuiFields) {
 
    @Suppress("BlockingMethodInNonBlockingContext")
    suspend fun execute(domain: Domain, emails: List<String>) {
-      // TODO: 18.03.2021 добавить на гуи прогрес бар с 0 отметкой
+      // TODO: 18.03.2021 проверить на гуи прогрес бар с текущим положением
       withContext(Dispatchers.Main) {
          guiFields.onAddDomainProgress?.invoke(domain.name)
       }
-      val chunkedEmails: List<List<String>> = emails.chunked(10)
+      val chunkedSize = 10
+      val chunkedEmails: List<List<String>> = emails.chunked(chunkedSize)
       val host = domain.attribute.get().toString().split(" ")[1]
       val ehlo = guiFields.ehlo
       val mailFrom = "MAIL FROM:< ${guiFields.realEmail}>"
 
-      val times = Random.nextInt(10, 500)
-      repeat(times) {
-         val value = it / times.toFloat()
-         withContext(Dispatchers.Main) {
-            guiFields.valueDomainProgressMap[domain.name]?.invoke(value)
-         }
-         delay(20)
-      }
-
-      delay(1500)
-      withContext(Dispatchers.Main) {
-         println("remove 1 ${domain.name}")
-         guiFields.onRemoveDomainProgress?.invoke(domain.name)
-      }
-
-
+      var counter = 0;
       chunkedEmails.forEach { partOfEmails ->
-
+         val subProgress = counter * chunkedSize / emails.size.toFloat()
+         guiFields.valueDomainProgressMap[domain.name]?.invoke(subProgress)
+         counter++
          Resources(Socket(host, SMTP_PORT))
             .useMe {
                it.bufferedReader.readLine()
@@ -49,7 +36,6 @@ class TalkWithSMTP(private val guiFields: GuiFields) {
 
                delay(5)
                it.bufferedReader.readLine()
-               // TODO: 18.03.2021 сервер может оборвать соединение в любо момент. обработать
                partOfEmails.forEach { email ->
                   it.printStream.sendMessage("RCPT TO:<$email>")
                   delay(100)

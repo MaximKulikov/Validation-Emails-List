@@ -23,6 +23,7 @@ class Validator(
          removeAll(unsubscribedList)
          removeAll(whiteList)
       }
+      // TODO: 02.04.2021 Проверить попадания в светлый и темный списки
       guiFields.goodEmails.addAll(whiteList)
 
 
@@ -37,10 +38,16 @@ class Validator(
 
          val jobs = mutableListOf<Job>()
          val jobSize = AtomicInteger(0)
+
          domainEmailsMap.entries.forEach {
-         //   TODO("в мапе неочищенные домены")
             val job = GlobalScope.launch(Dispatchers.IO) {
-               TalkWithSMTP(guiFields).execute(it.key, it.value)
+               try {
+                  TalkWithSMTP(guiFields).execute(it.key, it.value)
+               } catch (e: Exception) {
+                  e.printStackTrace()
+               } finally {
+                  guiFields.onRemoveDomainProgress?.invoke(it.key.name)
+               }
             }
             jobs.add(job)
             println(jobSize.incrementAndGet())
@@ -122,10 +129,6 @@ class Validator(
          .filter { it.isNotEmpty() }
          .distinct()
          .toList()
-   }
-
-   private fun saveAllToFile(file: File, lines: List<String>) {
-      file.writeText(lines.joinToString(separator = System.lineSeparator()))
    }
 
    companion object {

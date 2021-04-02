@@ -22,6 +22,7 @@ import java.awt.FileDialog
 import java.awt.FileDialog.LOAD
 import java.awt.FileDialog.SAVE
 import java.io.File
+import java.util.*
 import kotlin.system.exitProcess
 
 enum class JobStates {
@@ -75,8 +76,8 @@ fun main() {
                   val checkList = remember { mutableStateOf(TextFieldValue()) }
                   val blackList = remember { mutableStateOf(TextFieldValue()) }
                   val whiteList = remember { mutableStateOf(TextFieldValue()) }
-                  realEmail.value = TextFieldValue("demo@localhosh.local")
-                  ehlo.value = TextFieldValue("ehlo localhost")
+                  //realEmail.value = TextFieldValue("demo@localhosh.local")
+                  //ehlo.value = TextFieldValue("ehlo localhost")
 
                   Row(
                      verticalAlignment = Alignment.CenterVertically,
@@ -254,6 +255,7 @@ fun main() {
                            Button(
                               onClick = {
                                  FileDialog(currentWindow.window, "Файл с хорошими адресами", SAVE).apply {
+                                    this.file = "Filtered_${Date().time}.txt"
                                     this.isVisible = true
                                     val file: String? = this.file
                                     file?.let {
@@ -277,6 +279,7 @@ fun main() {
                            Button(
                               onClick = {
                                  FileDialog(currentWindow.window, "Файл с плохими адресами", SAVE).apply {
+                                    this.file = "Blocked_${Date().time}.csv"
                                     this.isVisible = true
                                     val file: String? = this.file
                                     file?.let {
