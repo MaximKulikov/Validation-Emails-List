@@ -1,13 +1,11 @@
 import androidx.compose.desktop.AppWindowAmbient
 import androidx.compose.desktop.Window
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
@@ -19,11 +17,11 @@ import androidx.compose.ui.window.MenuBar
 import androidx.compose.ui.window.MenuItem
 import kotlinx.coroutines.*
 import ru.gavarent.*
+import ru.gavarent.Utils.Companion.PROJECT_WEBSITE
 import java.awt.FileDialog
 import java.awt.FileDialog.LOAD
 import java.awt.FileDialog.SAVE
 import java.io.File
-import java.util.concurrent.ConcurrentHashMap
 import kotlin.system.exitProcess
 
 enum class JobStates {
@@ -376,7 +374,7 @@ fun getMenuBar(): MenuBar {
       item = arrayOf(
          MenuItem(
             name = "Web Site",
-            onClick = {}
+            onClick = { Utils.openBrowser(PROJECT_WEBSITE)}
          )
       )
    )

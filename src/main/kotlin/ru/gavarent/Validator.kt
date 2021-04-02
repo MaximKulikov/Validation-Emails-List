@@ -38,7 +38,7 @@ class Validator(
          val jobs = mutableListOf<Job>()
          val jobSize = AtomicInteger(0)
          domainEmailsMap.entries.forEach {
-            TODO("в мапе неочищенные домены")
+         //   TODO("в мапе неочищенные домены")
             val job = GlobalScope.launch(Dispatchers.IO) {
                TalkWithSMTP(guiFields).execute(it.key, it.value)
             }
