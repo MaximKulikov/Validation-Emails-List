@@ -24,6 +24,7 @@ hs_err_pid*
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm
 
 *.iml
+.gradle
 
 ## Directory-based project format:
 .idea/
@@ -70,6 +71,7 @@ crashlytics-build.properties
 
 ## Project-specific
 target/
+**/build/
 BadEmails_*.txt
 GoodEmails_*.txt
 
