@@ -10,11 +10,10 @@ class TalkWithSMTP(private val guiFields: GuiFields) {
 
    @Suppress("BlockingMethodInNonBlockingContext")
    suspend fun execute(domain: Domain, emails: List<String>) {
-      // TODO: 18.03.2021 проверить на гуи прогрес бар с текущим положением
       withContext(Dispatchers.Main) {
          guiFields.onAddDomainProgress?.invoke(domain.name)
       }
-      val chunkedSize = 10
+      val chunkedSize = 2
       val chunkedEmails: List<List<String>> = emails.chunked(chunkedSize)
       val host = domain.attribute.get().toString().split(" ")[1]
       val ehlo = guiFields.ehlo
@@ -23,6 +22,7 @@ class TalkWithSMTP(private val guiFields: GuiFields) {
       var counter = 0;
       chunkedEmails.forEach { partOfEmails ->
          val subProgress = counter * chunkedSize / emails.size.toFloat()
+         println("subProgress $subProgress")
          guiFields.valueDomainProgressMap[domain.name]?.invoke(subProgress)
          counter++
          Resources(Socket(host, SMTP_PORT))

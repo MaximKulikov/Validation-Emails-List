@@ -3,7 +3,9 @@ import androidx.compose.desktop.Window
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.Key
@@ -15,7 +17,9 @@ import androidx.compose.ui.window.KeyStroke
 import androidx.compose.ui.window.Menu
 import androidx.compose.ui.window.MenuBar
 import androidx.compose.ui.window.MenuItem
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import ru.gavarent.*
 import ru.gavarent.Utils.Companion.PROJECT_WEBSITE
 import java.awt.FileDialog
@@ -268,14 +272,14 @@ fun main() {
                                     }
                                  }
                               },
-                              modifier = Modifier.width(200.dp)
+                              modifier = Modifier.width(110.dp)
                            ) {
                               Text(
-                                 text = "Сохранить хорошие адресса",
+                                 text = "Отфильтрованные",
                                  textAlign = TextAlign.Center
                               )
                            }
-                           Spacer(Modifier.width(10.dp).height(10.dp))
+                           Spacer(Modifier.width(5.dp).height(5.dp))
                            Button(
                               onClick = {
                                  FileDialog(currentWindow.window, "Файл с плохими адресами", SAVE).apply {
@@ -293,11 +297,36 @@ fun main() {
                                     }
                                  }
                               },
-                              modifier = Modifier.width(200.dp)
+                              modifier = Modifier.width(110.dp)
                            )
                            {
                               Text(
-                                 text = "Сохранить плохие адресса",
+                                 text = "С ошибкой",
+                                 textAlign = TextAlign.Center
+                              )
+                           }
+                           Spacer(Modifier.width(5.dp).height(5.dp))
+                           Button(
+                              onClick = {
+                                 FileDialog(currentWindow.window, "Не обработанные", SAVE).apply {
+                                    this.file = "NotProcessed${Date().time}.txt"
+                                    this.isVisible = true
+                                    val file: String? = this.file
+                                    file?.let {
+                                       GlobalScope.launch(Dispatchers.IO) {
+                                          File(
+                                             this@apply.directory,
+                                             it
+                                          ).saveContent(emailApplication.guiFields.noProcessedEmails)
+                                       }
+                                    }
+                                 }
+                              },
+                              modifier = Modifier.width(110.dp)
+                           )
+                           {
+                              Text(
+                                 text = "Не обработанные",
                                  textAlign = TextAlign.Center
                               )
                            }
@@ -377,7 +406,7 @@ fun getMenuBar(): MenuBar {
       item = arrayOf(
          MenuItem(
             name = "Web Site",
-            onClick = { Utils.openBrowser(PROJECT_WEBSITE)}
+            onClick = { Utils.openBrowser(PROJECT_WEBSITE) }
          )
       )
    )

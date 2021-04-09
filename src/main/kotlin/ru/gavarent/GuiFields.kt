@@ -6,6 +6,7 @@ import java.io.File
 class GuiFields {
    val goodEmails: MutableList<String> = mutableListOf()
    val badEmails: MutableList<String> = mutableListOf()
+   val noProcessedEmails: MutableList<String> = mutableListOf()
    var realEmail = ""
    var ehlo = ""
    var checkList: File? = null
