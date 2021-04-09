@@ -21,6 +21,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import ru.gavarent.*
+import ru.gavarent.StringResources.*
 import ru.gavarent.Utils.Companion.PROJECT_WEBSITE
 import java.awt.FileDialog
 import java.awt.FileDialog.LOAD
@@ -39,12 +40,12 @@ enum class JobStates {
 @OptIn(ExperimentalStdlibApi::class)
 fun main() {
    val emailApplication = EmailApplication()
-
+   val appRes = emailApplication.appRes
    Window(
-      title = "Email Validation Tool",
+      title = appRes.string(APP_TITLE),
       size = IntSize(700, 500),
       /*icon = ,*/
-      menuBar = getMenuBar(),
+      menuBar = getMenuBar(appRes),
       onDismissRequest = {
          println("User close app")
       }
@@ -88,7 +89,7 @@ fun main() {
                      modifier = Modifier.fillMaxWidth()
                   ) {
                      Text(
-                        "Real email (*)",
+                        text = appRes.string(USER_EMAIL),
                         modifier = Modifier.width(100.dp)
                      )
                      TextField(
@@ -106,7 +107,7 @@ fun main() {
                      modifier = Modifier.fillMaxWidth()
                   ) {
                      Text(
-                        "HELO/EHLO answer (*)",
+                        appRes.string(EHLO),
                         modifier = Modifier.width(100.dp)
                      )
                      TextField(
@@ -124,7 +125,7 @@ fun main() {
                      modifier = Modifier.fillMaxWidth()
                   ) {
                      Text(
-                        "Check List (*)",
+                        appRes.string(EMAILS_LIST_INCOMING),
                         modifier = Modifier.width(100.dp)
                      )
                      TextField(
@@ -137,7 +138,7 @@ fun main() {
                      Spacer(Modifier.width(8.dp).height(8.dp))
                      Button(
                         onClick = {
-                           FileDialog(currentWindow.window, "Файл с проверяемыми адресами").apply {
+                           FileDialog(currentWindow.window, appRes.string(EMAILS_DIALOG_INCOMING)).apply {
                               this.isVisible = true
                               val file: String? = this.file
                               file?.let {
@@ -158,7 +159,7 @@ fun main() {
                      modifier = Modifier.fillMaxWidth()
                   ) {
                      Text(
-                        "Black List",
+                        appRes.string(EMAILS_LIST_UNSUB),
                         modifier = Modifier.width(100.dp)
                      )
                      TextField(
@@ -172,7 +173,7 @@ fun main() {
                      Spacer(Modifier.width(8.dp).height(8.dp))
                      Button(
                         onClick = {
-                           FileDialog(currentWindow.window, "Файл с черным списком").apply {
+                           FileDialog(currentWindow.window, appRes.string(EMAILS_DIALOG_UNSUB)).apply {
                               this.isVisible = true
                               val file: String? = this.file
                               file?.let {
@@ -193,7 +194,7 @@ fun main() {
                      modifier = Modifier.fillMaxWidth()
                   ) {
                      Text(
-                        "White List",
+                        appRes.string(EMAILS_LIST_IGNORE),
                         modifier = Modifier.width(100.dp)
                      )
                      TextField(
@@ -207,7 +208,7 @@ fun main() {
                      Spacer(Modifier.width(8.dp).height(8.dp))
                      Button(
                         onClick = {
-                           FileDialog(currentWindow.window, "Файл с белыми списками", LOAD).apply {
+                           FileDialog(currentWindow.window, appRes.string(EMAILS_DIALOG_IGNORE), LOAD).apply {
                               this.isVisible = true
                               val file: String? = this.file
                               file?.let {
@@ -239,10 +240,10 @@ fun main() {
                                  emailApplication.process()
                               }
                            } else {
-                              snackBar.value = "Заполнены не все необходимые поля"
+                              snackBar.value = appRes.string(WARN_REQUIRE_FIELDS)
                            }
                         }) {
-                           Text(text = "Начать")
+                           Text(text = appRes.string(BUTTON_BEGIN))
                         }
 
                      }
@@ -258,8 +259,8 @@ fun main() {
                         Row {
                            Button(
                               onClick = {
-                                 FileDialog(currentWindow.window, "Файл с хорошими адресами", SAVE).apply {
-                                    this.file = "Filtered_${Date().time}.txt"
+                                 FileDialog(currentWindow.window, appRes.string(FINISH_DIALOG_FILTERED), SAVE).apply {
+                                    this.file = "${appRes.string(FINISH_FILE_PREFIX_FILTERED)}_${Date().time}.txt"
                                     this.isVisible = true
                                     val file: String? = this.file
                                     file?.let {
@@ -275,15 +276,15 @@ fun main() {
                               modifier = Modifier.width(110.dp)
                            ) {
                               Text(
-                                 text = "Отфильтрованные",
+                                 text = appRes.string(FINISH_BUTTON_FILTERED),
                                  textAlign = TextAlign.Center
                               )
                            }
                            Spacer(Modifier.width(5.dp).height(5.dp))
                            Button(
                               onClick = {
-                                 FileDialog(currentWindow.window, "Файл с плохими адресами", SAVE).apply {
-                                    this.file = "Blocked_${Date().time}.csv"
+                                 FileDialog(currentWindow.window, appRes.string(FINISH_DIALOG_ERROR), SAVE).apply {
+                                    this.file = "${appRes.string(FINISH_FILE_PREFIX_FAILED)}_${Date().time}.csv"
                                     this.isVisible = true
                                     val file: String? = this.file
                                     file?.let {
@@ -301,15 +302,15 @@ fun main() {
                            )
                            {
                               Text(
-                                 text = "С ошибкой",
+                                 text = appRes.string(FINISH_BUTTON_FAILED),
                                  textAlign = TextAlign.Center
                               )
                            }
                            Spacer(Modifier.width(5.dp).height(5.dp))
                            Button(
                               onClick = {
-                                 FileDialog(currentWindow.window, "Не обработанные", SAVE).apply {
-                                    this.file = "NotProcessed${Date().time}.txt"
+                                 FileDialog(currentWindow.window, appRes.string(FINISH_DIALOG_FAILED), SAVE).apply {
+                                    this.file = "${appRes.string(FINISH_FILE_PREFIX_ERROR)}_${Date().time}.txt"
                                     this.isVisible = true
                                     val file: String? = this.file
                                     file?.let {
@@ -326,7 +327,7 @@ fun main() {
                            )
                            {
                               Text(
-                                 text = "Не обработанные",
+                                 text = appRes.string(FINISH_BUTTON_ERROR),
                                  textAlign = TextAlign.Center
                               )
                            }
@@ -390,22 +391,23 @@ fun main() {
    }
 }
 
-fun getMenuBar(): MenuBar {
+@OptIn(ExperimentalStdlibApi::class)
+fun getMenuBar(appRes: ResourceMapFactory): MenuBar {
    val fileMenu = Menu(
-      name = "File",
+      name = appRes.string(MENU_FILE),
       item = arrayOf(
          MenuItem(
-            name = "Exit",
+            name = appRes.string(MENU_FILE_EXIT),
             onClick = { exitProcess(0) },
             shortcut = KeyStroke(Key.X)
          )
       )
    )
    val helpMenu = Menu(
-      name = "Help",
+      name = appRes.string(MENU_ABOUT),
       item = arrayOf(
          MenuItem(
-            name = "Web Site",
+            name = appRes.string(MENU_ABOUT_WEBSITE),
             onClick = { Utils.openBrowser(PROJECT_WEBSITE) }
          )
       )
