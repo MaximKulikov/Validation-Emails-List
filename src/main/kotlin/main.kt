@@ -9,6 +9,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.pointer.pointerMoveFilter
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntSize
@@ -90,7 +91,17 @@ fun main() {
                   ) {
                      Text(
                         text = appRes.string(USER_EMAIL),
-                        modifier = Modifier.width(100.dp)
+                        modifier = Modifier
+                           .width(100.dp)
+                           .pointerMoveFilter(onEnter = {
+                              snackBar.value = appRes.string(USER_EMAIL_DESCRIPTION)
+                              false
+                           },
+                              onExit = {
+                                 snackBar.value = ""
+                                 false
+                              }
+                           )
                      )
                      TextField(
                         value = realEmail.value,
@@ -108,7 +119,17 @@ fun main() {
                   ) {
                      Text(
                         appRes.string(EHLO),
-                        modifier = Modifier.width(100.dp)
+                        modifier = Modifier
+                           .width(100.dp)
+                           .pointerMoveFilter(onEnter = {
+                              snackBar.value = appRes.string(EHLO_DESCRIPTION)
+                              false
+                           },
+                              onExit = {
+                                 snackBar.value = ""
+                                 false
+                              }
+                           )
                      )
                      TextField(
                         value = ehlo.value,
@@ -126,7 +147,17 @@ fun main() {
                   ) {
                      Text(
                         appRes.string(EMAILS_LIST_INCOMING),
-                        modifier = Modifier.width(100.dp)
+                        modifier = Modifier
+                           .width(100.dp)
+                           .pointerMoveFilter(onEnter = {
+                              snackBar.value = appRes.string(EMAILS_LIST_INCOMING_DESCRIPTION)
+                              false
+                           },
+                              onExit = {
+                                 snackBar.value = ""
+                                 false
+                              }
+                           )
                      )
                      TextField(
                         value = checkList.value,
@@ -160,7 +191,17 @@ fun main() {
                   ) {
                      Text(
                         appRes.string(EMAILS_LIST_UNSUB),
-                        modifier = Modifier.width(100.dp)
+                        modifier = Modifier
+                           .width(100.dp)
+                           .pointerMoveFilter(onEnter = {
+                              snackBar.value = appRes.string(EMAILS_LIST_UNSUB_DESCRIPTION)
+                              false
+                           },
+                              onExit = {
+                                 snackBar.value = ""
+                                 false
+                              }
+                           )
                      )
                      TextField(
                         value = blackList.value,
@@ -195,7 +236,17 @@ fun main() {
                   ) {
                      Text(
                         appRes.string(EMAILS_LIST_IGNORE),
-                        modifier = Modifier.width(100.dp)
+                        modifier = Modifier
+                           .width(100.dp)
+                           .pointerMoveFilter(onEnter = {
+                              snackBar.value = appRes.string(EMAILS_LIST_IGNORE_DESCRIPTION)
+                              false
+                           },
+                              onExit = {
+                                 snackBar.value = ""
+                                 false
+                              }
+                           )
                      )
                      TextField(
                         value = whiteList.value,
