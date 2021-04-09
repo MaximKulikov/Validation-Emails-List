@@ -15,4 +15,4 @@ V. Application translated into russian, dummy set for other locales
 
  ## ScreenShot
  
-![GUI](https://github.com/Trinion/Validation-Emails-List/blob/master/ScreenShot.PNG?raw=true)
+![GUI](https://github.com/MaximKulikov/Validation-Emails-List/blob/main/ScreenShot.PNG?raw=true)
