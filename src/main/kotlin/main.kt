@@ -24,11 +24,14 @@ import kotlinx.coroutines.launch
 import ru.gavarent.*
 import ru.gavarent.StringResources.*
 import ru.gavarent.Utils.Companion.PROJECT_WEBSITE
+import ru.gavarent.res.AppRes
 import java.awt.FileDialog
 import java.awt.FileDialog.LOAD
 import java.awt.FileDialog.SAVE
+import java.awt.image.BufferedImage
 import java.io.File
 import java.util.*
+import javax.imageio.ImageIO
 import kotlin.system.exitProcess
 
 enum class JobStates {
@@ -45,7 +48,7 @@ fun main() {
    Window(
       title = appRes.string(APP_TITLE),
       size = IntSize(700, 500),
-      /*icon = ,*/
+      icon = getIcon(),
       menuBar = getMenuBar(appRes),
       onDismissRequest = {
          println("User close app")
@@ -441,6 +444,8 @@ fun main() {
       }
    }
 }
+
+fun getIcon(): BufferedImage? = ImageIO.read(AppRes::class.java.getResource("app_icon.png"))
 
 @OptIn(ExperimentalStdlibApi::class)
 fun getMenuBar(appRes: ResourceMapFactory): MenuBar {
